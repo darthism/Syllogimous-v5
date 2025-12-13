@@ -10491,11 +10491,22 @@ timerInput.addEventListener("input", evt => {
 });
 
 function handleCountDown() {
+    const wasToggled = timerToggled;
+    const wasRunning = timerRunning;
     timerToggled = timerToggle.checked;
-    if (timerToggled)
+    if (timerToggled) {
         startCountDown();
-    else
-        stopCountDown();
+        return;
+    }
+
+    // Pausing the active question timer discards the current question and regenerates a fresh one
+    // to prevent pausing mid-question for advantage.
+    stopCountDown();
+    if (wasToggled && wasRunning && question) {
+        init();
+    } else {
+        renderTimerBar();
+    }
 }
 
 timerToggle.addEventListener("click", evt => {

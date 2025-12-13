@@ -1,0 +1,340 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App-level globals. The bulk of styling is preserved from the legacy CSS in /public/css. */
+
+html,
+body {
+  height: 100%;
+}
+
+:root {
+  --ui-radius-lg: 24px;
+  --ui-radius-md: 18px;
+  --ui-radius-sm: 14px;
+  --nav-offset: 5rem; /* matches <main className="pt-20"> */
+
+  --ui-border-dark: rgba(148, 163, 184, 0.22);
+  --ui-border-light: rgba(15, 23, 42, 0.18);
+  --ui-card-dark: rgba(2, 6, 23, 0.58);
+  --ui-card-dark-2: rgba(2, 6, 23, 0.42);
+  --ui-card-light: rgba(255, 255, 255, 0.72);
+  --ui-card-light-2: rgba(255, 255, 255, 0.58);
+  --ui-shadow: 0 30px 80px -50px rgba(0, 0, 0, 0.75);
+}
+
+/* Smooth theme transitions without affecting gameplay timing. */
+body {
+  transition: background-color 220ms ease, color 220ms ease;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Let form controls render appropriately per theme. */
+html.dark {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+}
+
+/* Premium app background (keeps legacy colors intact underneath). */
+body {
+  position: relative;
+  background: radial-gradient(1000px 600px at 15% -10%, rgba(56, 189, 248, 0.12), transparent 55%),
+    radial-gradient(900px 520px at 85% 0%, rgba(168, 85, 247, 0.10), transparent 60%),
+    radial-gradient(900px 520px at 55% 110%, rgba(34, 211, 238, 0.08), transparent 60%);
+}
+
+html.light body {
+  background: radial-gradient(1000px 600px at 15% -10%, rgba(2, 132, 199, 0.10), transparent 55%),
+    radial-gradient(900px 520px at 85% 0%, rgba(147, 51, 234, 0.09), transparent 60%),
+    radial-gradient(900px 520px at 55% 110%, rgba(14, 165, 233, 0.08), transparent 60%);
+}
+
+/* Subtle texture layer (very low contrast) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.22;
+  background-image: repeating-linear-gradient(
+      45deg,
+      rgba(148, 163, 184, 0.05) 0px,
+      rgba(148, 163, 184, 0.05) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    radial-gradient(circle at 25% 0%, rgba(34, 211, 238, 0.10), transparent 42%),
+    radial-gradient(circle at 85% 10%, rgba(168, 85, 247, 0.09), transparent 45%);
+}
+
+button {
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* ---- Legacy UI "skin": rounded rectangle revamp (no DOM/logic changes) ---- */
+
+/* Remove the legacy neon glow around the main game window */
+.main-view {
+  box-shadow: none !important;
+}
+
+/* Border color should follow theme (legacy toggles body.light-mode) */
+.main-view {
+  border-color: #ffffff !important;
+}
+
+body.light-mode .main-view {
+  border-color: #000000 !important;
+}
+
+/* Make the game window extend to the bottom of the screen (below the fixed navbar). */
+.main-view {
+  height: calc(100svh - var(--nav-offset)) !important;
+  min-height: calc(100svh - var(--nav-offset)) !important;
+}
+
+/* Panels / containers */
+.main-view,
+.offcanvas,
+.dropdown,
+.display-outer,
+.carousel,
+.graph-popup,
+.hqli,
+.profile-container,
+.inline-input__outer,
+.single-input,
+.tooltip-text,
+.linear-dropdown,
+.profile-list,
+.profile-dropdown,
+.profile-select,
+.hql,
+.history-list,
+.settings,
+.spoiler,
+.timer {
+  border-radius: var(--ui-radius-lg) !important;
+}
+
+/* Make card-like items feel softer */
+.hqli,
+.profile-select,
+.dropdown-item {
+  border-radius: var(--ui-radius-md) !important;
+}
+
+/* Inputs / selects */
+input,
+select,
+textarea,
+.form-select,
+.profile-input {
+  border-radius: var(--ui-radius-sm) !important;
+}
+
+/* Buttons become rounded rectangles (pill-ish) */
+button,
+.profile-plus,
+.profile-share,
+.settings-gear,
+.offcanvas-close {
+  border-radius: 9999px !important;
+}
+
+/* Clamp sharp borders a bit */
+.main-view,
+.offcanvas,
+.display-outer,
+.carousel {
+  overflow: hidden;
+}
+
+/* Reduce motion accessibility: prefer no heavy animations. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Legacy layout fix: keep timer + score visible even with huge premise counts ---- */
+/* Make the game area fill the available height and let the premise list scroll inside. */
+#game-area.game-area {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  justify-content: flex-start;
+}
+
+.timer-wrap {
+  margin-bottom: clamp(0.75rem, 1.6vh, 1.75rem);
+}
+
+/* The main gameplay column (between timer and bottom UI). This is a <span>, so force it to behave like a layout container. */
+#spoiler-area {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-display {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.carousel.visible,
+.display-outer.visible {
+  display: flex !important;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+  overflow: hidden;
+}
+
+.carousel_display_label-wrapper,
+.display-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* The scrolling content areas */
+.display_text {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100% !important; /* keep within panel so premises don't push score/timer off */
+  overflow-y: auto;
+}
+
+.carousel_display_text {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Never let bottom UI shrink away */
+.confirmation-buttons,
+.level-wrapper {
+  flex: 0 0 auto;
+}
+
+/* ---- Shared modern UI primitives (Tailwind @apply) ---- */
+@layer components {
+  .ui-shell {
+    @apply mx-auto max-w-5xl px-4 py-6;
+  }
+
+  .ui-header {
+    @apply rounded-3xl border backdrop-blur-md p-5 shadow-[0_30px_80px_-55px_rgba(0,0,0,0.8)];
+  }
+
+  .dark .ui-header {
+    border-color: var(--ui-border-dark);
+    background: linear-gradient(180deg, rgba(2, 6, 23, 0.70), rgba(2, 6, 23, 0.45));
+  }
+
+  .light .ui-header {
+    border-color: var(--ui-border-light);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.55));
+  }
+
+  .ui-card {
+    @apply rounded-3xl border p-5;
+  }
+  .dark .ui-card {
+    border-color: var(--ui-border-dark);
+    background: var(--ui-card-dark-2);
+  }
+  .light .ui-card {
+    border-color: var(--ui-border-light);
+    background: var(--ui-card-light-2);
+  }
+
+  .ui-tile {
+    @apply rounded-2xl border p-4;
+  }
+  .dark .ui-tile {
+    border-color: rgba(148, 163, 184, 0.20);
+    background: rgba(2, 6, 23, 0.55);
+  }
+  .light .ui-tile {
+    border-color: rgba(15, 23, 42, 0.14);
+    background: rgba(255, 255, 255, 0.70);
+  }
+
+  .ui-pill {
+    @apply px-3 py-1.5 rounded-full text-sm border transition-colors;
+  }
+  .dark .ui-pill {
+    @apply text-slate-100;
+    border-color: rgba(148, 163, 184, 0.25);
+    background: rgba(2, 6, 23, 0.35);
+  }
+  .light .ui-pill {
+    @apply text-slate-900;
+    border-color: rgba(15, 23, 42, 0.18);
+    background: rgba(255, 255, 255, 0.55);
+  }
+
+  .ui-pill:hover {
+    filter: brightness(1.06);
+  }
+
+  .ui-pill-primary {
+    @apply ui-pill;
+  }
+  .dark .ui-pill-primary {
+    border-color: rgba(34, 211, 238, 0.38);
+    background: rgba(34, 211, 238, 0.16);
+    color: #e0f2fe;
+  }
+  .light .ui-pill-primary {
+    border-color: rgba(2, 132, 199, 0.35);
+    background: rgba(2, 132, 199, 0.10);
+    color: rgb(2 6 23);
+  }
+
+  .ui-input {
+    @apply w-full rounded-2xl px-3 py-2.5 text-sm outline-none border;
+  }
+  .dark .ui-input {
+    border-color: rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.80);
+    color: #f1f5f9;
+  }
+  .light .ui-input {
+    border-color: rgba(15, 23, 42, 0.18);
+    background: rgba(255, 255, 255, 0.75);
+    color: rgb(2 6 23);
+  }
+
+  .ui-input:focus {
+    box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+    border-color: rgba(34, 211, 238, 0.40);
+  }
+}
+
+

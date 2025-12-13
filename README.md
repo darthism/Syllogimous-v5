@@ -1,3 +1,35 @@
+# Syllogimous (Next.js + Supabase)
+
+This repo has been migrated to **Next.js (TypeScript)** with **Supabase** used for cloud persistence (profiles/app state sync, progress history, and background images), while keeping the original game/generator logic behavior intact.
+
+## Running locally
+
+1. Install deps:
+   - `npm install`
+2. Configure Supabase (optional but recommended):
+   - Copy `docs/supabase-env.example` to a new file named `.env.local` and fill in your values.
+   - Apply the SQL in `supabase/schema.sql` in the Supabase SQL editor.
+3. Start dev server:
+   - `npm run dev`
+
+If Supabase env vars are not set, the app falls back to **localStorage + IndexedDB** (original behavior).
+
+### Dev bundler
+
+`npm run dev` uses **Turbopack** (`next dev --turbo`). If you want to run the legacy webpack dev server instead, use:
+
+- `npx next dev`
+
+## Supabase data model
+
+- **KV sync**: `public.user_kv` stores raw strings mirroring localStorage values for:
+  - `sllgms-v3`
+  - `sllgms-v3-profiles`
+  - `sllgms-v3-selected-profile`
+  - `sllgms-v3-app-state`
+- **Progress history**: `public.rrt_history`
+- **Images**: storage bucket `images` (per-user folder prefix)
+
 # Syllogimous v3
 
 Modified version of Syllogimous-v3, created to support new theories and experiments on relational reasoning training.

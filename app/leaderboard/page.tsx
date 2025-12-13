@@ -4,11 +4,11 @@ import { getSupabaseClient, isSupabaseConfigured } from "@/supabase/client";
 import { useEffect, useState } from "react";
 
 type Entry = {
-  id: number;
+  user_id: string;
   display_name: string;
   avatar_path?: string | null;
-  score: number;
-  created_at: string;
+  points: number;
+  updated_at: string;
 };
 
 type GqRow = {
@@ -47,10 +47,11 @@ export default function LeaderboardPage() {
 
     void Promise.all([
       supabase
-        .from("leaderboard_entries")
-        .select("id,display_name,avatar_path,score,created_at")
+        .from("leaderboard_points")
+        .select("user_id,display_name,avatar_path,points,updated_at")
         .not("avatar_path", "is", null)
-        .order("score", { ascending: false })
+        .not("display_name", "is", null)
+        .order("points", { ascending: false })
         .limit(TOP_N),
       supabase
         .from("leaderboard_2d_gq")
@@ -135,8 +136,7 @@ export default function LeaderboardPage() {
           <div className="text-sm text-amber-200">
             {error}
             <div className="mt-2 text-xs text-slate-400">
-              Make sure you created the table `leaderboard_entries` (see `supabase/schema.sql` update
-              we can add).
+              Make sure you applied `supabase/schema.sql` (leaderboard tables + RLS).
             </div>
           </div>
         ) : entries == null || gqRows == null || minuteRows == null ? (
@@ -217,7 +217,7 @@ export default function LeaderboardPage() {
             </div>
 
             <div>
-              <div className="text-sm font-semibold mb-2">Top scores</div>
+              <div className="text-sm font-semibold mb-2">Top points</div>
               {entries.length === 0 ? (
                 <div className="text-sm text-slate-300">No entries yet.</div>
               ) : (
@@ -227,20 +227,20 @@ export default function LeaderboardPage() {
                       <tr>
                         <th className="py-2 text-left">#</th>
                         <th className="py-2 text-left">Name</th>
-                        <th className="py-2 text-left">Score</th>
-                        <th className="py-2 text-left">When</th>
+                        <th className="py-2 text-left">Points</th>
+                        <th className="py-2 text-left">Updated</th>
                       </tr>
                     </thead>
                     <tbody>
                       {entries.map((e, idx) => (
-                        <tr key={e.id} className="border-t border-slate-800/60 hover:bg-slate-900/20">
+                        <tr key={e.user_id} className="border-t border-slate-800/60 hover:bg-slate-900/20">
                           <td className="py-2">{idx + 1}</td>
                           <td className="py-2">
                             <NameCell name={e.display_name} avatar_path={e.avatar_path} />
                           </td>
-                          <td className="py-2 font-semibold">{e.score}</td>
+                          <td className="py-2 font-semibold">{e.points}</td>
                           <td className="py-2 text-slate-400">
-                            {new Date(e.created_at).toLocaleString()}
+                            {new Date(e.updated_at).toLocaleString()}
                           </td>
                         </tr>
                       ))}

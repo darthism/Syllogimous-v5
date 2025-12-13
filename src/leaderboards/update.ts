@@ -5,6 +5,19 @@ import { gqFromPremises } from "./gq";
 
 let lastUpdateAt = 0;
 
+function readRankPointsFromLocalStorage(): number {
+  try {
+    const raw = localStorage.getItem("sllgms-v3-app-state");
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw);
+    const p = (parsed as any)?.rankPoints;
+    if (typeof p !== "number" || !Number.isFinite(p)) return 0;
+    return Math.max(0, Math.floor(p));
+  } catch {
+    return 0;
+  }
+}
+
 type ProgressRow = {
   key?: string;
   timestamp?: number;
@@ -69,7 +82,29 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     } catch {
       // ignore
     }
+    try {
+      await supabase.from("leaderboard_points").delete().eq("user_id", userId);
+    } catch {
+      // ignore
+    }
     return;
+  }
+
+  // Points leaderboard: always keep current points up to date (top 50 is enforced at query time).
+  try {
+    const points = readRankPointsFromLocalStorage();
+    await supabase.from("leaderboard_points").upsert(
+      {
+        user_id: userId,
+        display_name: displayName,
+        avatar_path: avatarPath,
+        points,
+        updated_at: new Date().toISOString()
+      } as any,
+      { onConflict: "user_id" }
+    );
+  } catch {
+    // ignore
   }
 
   // Only recompute GQ leaderboard when the user is doing 2D Space questions.

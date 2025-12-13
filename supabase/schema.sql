@@ -91,6 +91,41 @@ create table if not exists public.leaderboard_minutes (
 alter table public.leaderboard_minutes
   add column if not exists avatar_path text;
 
+-- 2C) Points leaderboard (public read, owner upsert)
+create table if not exists public.leaderboard_points (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  display_name text not null,
+  avatar_path text,
+  points integer not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.leaderboard_points
+  add column if not exists avatar_path text;
+
+alter table public.leaderboard_points
+  add column if not exists points integer not null default 0;
+
+create index if not exists leaderboard_points_points_desc on public.leaderboard_points (points desc);
+
+alter table public.leaderboard_points enable row level security;
+
+drop policy if exists "leaderboard_points_read_all" on public.leaderboard_points;
+create policy "leaderboard_points_read_all"
+on public.leaderboard_points for select
+using (true);
+
+drop policy if exists "leaderboard_points_owner_write" on public.leaderboard_points;
+create policy "leaderboard_points_owner_write"
+on public.leaderboard_points for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "leaderboard_points_owner_update" on public.leaderboard_points;
+create policy "leaderboard_points_owner_update"
+on public.leaderboard_points for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
 alter table public.leaderboard_minutes enable row level security;
 
 drop policy if exists "leaderboard_minutes_read_all" on public.leaderboard_minutes;

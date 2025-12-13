@@ -45,8 +45,7 @@ export function RankMenu() {
           className="inline-block h-2.5 w-2.5 rounded-full"
           style={{ backgroundColor: rank.color, boxShadow: "0 0 0 2px rgba(0,0,0,0.15) inset" }}
         />
-        <span className="hidden sm:inline">{rank.name}</span>
-        <span className="tabular-nums opacity-90">{points}</span>
+        <span>{rank.name}</span>
       </button>
 
       {open ? (

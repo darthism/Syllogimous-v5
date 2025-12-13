@@ -190,6 +190,14 @@ button,
   justify-content: flex-start;
 }
 
+.carousel_display_label-wrapper h2,
+.display-inner h2 {
+  /* Legacy uses negative margin-top; combined with overflow:hidden it can clip on desktop. */
+  margin-top: 0 !important;
+  top: 0.35rem !important;
+  line-height: 1.2;
+}
+
 .timer-wrap {
   margin-bottom: clamp(0.75rem, 1.6vh, 1.75rem);
 }

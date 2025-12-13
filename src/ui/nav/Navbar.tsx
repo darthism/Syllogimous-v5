@@ -4,7 +4,15 @@ import { usePathname } from "next/navigation";
 import { AuthMenu } from "./AuthMenu";
 import { RankMenu } from "./RankMenu";
 
-function NavLink({ href, label }: { href: string; label: string }) {
+function NavLink({
+  href,
+  label,
+  iconClass
+}: {
+  href: string;
+  label: string;
+  iconClass: string;
+}) {
   const pathname = usePathname();
   const active = pathname === href;
   return (
@@ -21,8 +29,13 @@ function NavLink({ href, label }: { href: string; label: string }) {
           ? "shadow-[0_0_0_1px_rgba(34,211,238,0.22),0_18px_45px_-30px_rgba(34,211,238,0.45)] border-cyan-300/30 bg-cyan-500/10"
           : ""
       ].join(" ")}
+      aria-label={label}
+      title={label}
     >
-      {label}
+      <span className="inline-flex items-center gap-2">
+        <i className={[iconClass, "text-[18px] leading-none"].join(" ")} aria-hidden="true" />
+        <span className="hidden sm:inline">{label}</span>
+      </span>
     </a>
   );
 }
@@ -45,9 +58,9 @@ export function Navbar() {
 
                 <div className="flex items-center gap-2">
                   <RankMenu />
-                  <NavLink href="/" label="Home" />
-                  <NavLink href="/stats" label="Stats" />
-                  <NavLink href="/leaderboard" label="Leaderboard" />
+                  <NavLink href="/" label="Home" iconClass="ci-House_02" />
+                  <NavLink href="/stats" label="Stats" iconClass="ci-Chart_Line" />
+                  <NavLink href="/leaderboard" label="Leaderboard" iconClass="ci-Star" />
                 </div>
               </div>
 

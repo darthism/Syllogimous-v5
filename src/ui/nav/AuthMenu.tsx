@@ -93,8 +93,13 @@ export function AuthMenu() {
           type="button"
           onClick={logout}
           className="ui-pill"
+          aria-label="Log out"
+          title="Log out"
         >
-          Log out
+          <span className="inline-flex items-center gap-2">
+            <i className="ci-Exit text-[18px] leading-none" aria-hidden="true" />
+            <span className="hidden sm:inline">Log out</span>
+          </span>
         </button>
       </div>
     );
@@ -255,8 +260,13 @@ export function AuthMenu() {
             setStatus(null);
           }}
           className="ui-pill"
+          aria-label="Sign up"
+          title="Sign up"
         >
-          Sign up
+          <span className="inline-flex items-center gap-2">
+            <i className="ci-User_Add text-[18px] leading-none" aria-hidden="true" />
+            <span className="hidden sm:inline">Sign up</span>
+          </span>
         </button>
         <button
           type="button"
@@ -266,8 +276,13 @@ export function AuthMenu() {
             setStatus(null);
           }}
           className="ui-pill-primary"
+          aria-label="Log in"
+          title="Log in"
         >
-          Log in
+          <span className="inline-flex items-center gap-2">
+            <i className="ci-User_Circle text-[18px] leading-none" aria-hidden="true" />
+            <span className="hidden sm:inline">Log in</span>
+          </span>
         </button>
       </div>
 

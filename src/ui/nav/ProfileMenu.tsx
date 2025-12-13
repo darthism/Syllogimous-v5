@@ -98,8 +98,13 @@ export function ProfileMenu() {
           setOpen((v) => !v);
         }}
         className="ui-pill"
+        aria-label="Profile"
+        title="Profile"
       >
-        Profile
+        <span className="inline-flex items-center gap-2">
+          <i className="ci-User_01 text-[18px] leading-none" aria-hidden="true" />
+          <span className="hidden sm:inline">Profile</span>
+        </span>
       </button>
 
       {open ? (

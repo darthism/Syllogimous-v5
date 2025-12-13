@@ -71,14 +71,15 @@ export function RankMenu() {
           setOpen((v) => !v);
         }}
         className="ui-pill"
-        title="Rank + points"
+        title={`${rank.name} • ${points} pts`}
+        aria-label={`${rank.name} • ${points} points`}
       >
         <span
           aria-hidden="true"
           className="inline-block h-2.5 w-2.5 rounded-full"
           style={{ backgroundColor: rank.color, boxShadow: "0 0 0 2px rgba(0,0,0,0.15) inset" }}
         />
-        <span>{rank.name}</span>
+        <span className="hidden sm:inline">{rank.name}</span>
       </button>
 
       {mounted && open && pos

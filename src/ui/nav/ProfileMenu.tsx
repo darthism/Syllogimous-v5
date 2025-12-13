@@ -2,6 +2,7 @@
 
 import { getSupabaseClient, isSupabaseConfigured } from "@/supabase/client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Profile = {
   username: string;
@@ -16,8 +17,13 @@ export function ProfileMenu() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState("");
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top: number; width: number } | null>(null);
 
   const enabled = isSupabaseConfigured() && Boolean(supabase);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -43,6 +49,31 @@ export function ProfileMenu() {
       cancelled = true;
     };
   }, [supabase]);
+
+  function computePos() {
+    const el = btnRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const panelWidth = 360;
+    const gap = 8;
+    const vw = window.innerWidth;
+    const left = Math.max(8, Math.min(r.right - panelWidth, vw - panelWidth - 8));
+    const top = Math.min(window.innerHeight - 24, r.bottom + gap);
+    setPos({ left, top, width: panelWidth });
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    computePos();
+    const onResize = () => computePos();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onResize, true);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onResize, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   async function save() {
     if (!supabase) return;
@@ -97,6 +128,7 @@ export function ProfileMenu() {
           setStatus(null);
           setOpen((v) => !v);
         }}
+        ref={btnRef}
         className="ui-pill"
         aria-label="Profile"
         title="Profile"
@@ -107,44 +139,65 @@ export function ProfileMenu() {
         </span>
       </button>
 
-      {open ? (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-[320px] z-[4500] ui-card shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)] backdrop-blur-md">
-          <div className="text-sm font-semibold">Customize profile</div>
-          <div className="mt-3 grid gap-3">
-            <div className="grid gap-1.5">
-              <label className="text-xs font-semibold text-slate-200">Username</label>
-              <input
-                className="ui-input"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={profile?.username ?? "Your name"}
+      {mounted && open && pos
+        ? createPortal(
+            <div style={{ position: "fixed", inset: 0, zIndex: 5000 }}>
+              <div
+                style={{ position: "fixed", inset: 0, background: "transparent" }}
+                onMouseDown={() => setOpen(false)}
+                onClick={() => setOpen(false)}
               />
-              <div className="text-[11px] text-slate-400">
-                3–20 chars, letters/numbers/underscore. Checked via SFW API. Required for leaderboards.
+              <div
+                className="ui-card shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)] backdrop-blur-md"
+                style={{
+                  position: "fixed",
+                  left: pos.left,
+                  top: pos.top,
+                  width: pos.width,
+                  maxWidth: "92vw"
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-sm font-semibold">Customize profile</div>
+                <div className="mt-3 grid gap-3">
+                  <div className="grid gap-1.5">
+                    <label className="text-xs font-semibold text-slate-200">Username</label>
+                    <input
+                      className="ui-input"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder={profile?.username ?? "Your name"}
+                    />
+                    <div className="text-[11px] text-slate-400">
+                      3–20 chars, letters/numbers/underscore. Checked via SFW API. Required for leaderboards.
+                    </div>
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <label className="text-xs font-semibold text-slate-200">Profile picture</label>
+                    <input ref={fileRef} type="file" accept="image/*" className="text-xs text-slate-200" />
+                    <div className="text-[11px] text-slate-400">
+                      PNG/JPG/WebP only. Required for leaderboards.
+                    </div>
+                  </div>
+
+                  {status ? <div className="text-xs text-amber-200">{status}</div> : null}
+
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button type="button" onClick={() => setOpen(false)} className="ui-pill">
+                      Cancel
+                    </button>
+                    <button type="button" disabled={loading} onClick={save} className="ui-pill-primary">
+                      Save
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="grid gap-1.5">
-              <label className="text-xs font-semibold text-slate-200">Profile picture</label>
-              <input ref={fileRef} type="file" accept="image/*" className="text-xs text-slate-200" />
-              <div className="text-[11px] text-slate-400">
-                PNG/JPG/WebP only. Required for leaderboards.
-              </div>
-            </div>
-
-            {status ? <div className="text-xs text-amber-200">{status}</div> : null}
-
-            <div className="flex justify-end gap-2 pt-1">
-              <button type="button" onClick={() => setOpen(false)} className="ui-pill">
-                Cancel
-              </button>
-              <button type="button" disabled={loading} onClick={save} className="ui-pill-primary">
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

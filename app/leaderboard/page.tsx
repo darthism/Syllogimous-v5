@@ -1,6 +1,7 @@
 "use client";
 
 import { getSupabaseClient, isSupabaseConfigured } from "@/supabase/client";
+import { getRank } from "@/rank/ranks";
 import { useEffect, useState } from "react";
 
 type Entry = {
@@ -37,6 +38,7 @@ export default function LeaderboardPage() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [gqRows, setGqRows] = useState<GqRow[] | null>(null);
   const [minuteRows, setMinuteRows] = useState<MinutesRow[] | null>(null);
+  const [rankByUserId, setRankByUserId] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function LeaderboardPage() {
         .not("display_name", "is", null)
         .order("total_ms", { ascending: false })
         .limit(TOP_N)
-    ]).then(([scoreRes, gqRes, minutesRes]) => {
+    ]).then(async ([scoreRes, gqRes, minutesRes]) => {
       if (cancelled) return;
       const firstErr = scoreRes.error || gqRes.error || minutesRes.error;
       if (firstErr) {
@@ -76,11 +78,50 @@ export default function LeaderboardPage() {
         setEntries([]);
         setGqRows([]);
         setMinuteRows([]);
+        setRankByUserId({});
         return;
       }
-      setEntries((scoreRes.data as any) ?? []);
-      setGqRows((gqRes.data as any) ?? []);
-      setMinuteRows((minutesRes.data as any) ?? []);
+
+      const entriesData = ((scoreRes.data as any) ?? []) as Entry[];
+      const gqData = ((gqRes.data as any) ?? []) as GqRow[];
+      const minutesData = ((minutesRes.data as any) ?? []) as MinutesRow[];
+
+      setEntries(entriesData);
+      setGqRows(gqData);
+      setMinuteRows(minutesData);
+
+      // Build a user_id -> rank-name map based on the user's points.
+      // For points leaderboard entries we can compute directly, but for other leaderboards
+      // we want to show the user's current rank next to their name.
+      const ids = Array.from(
+        new Set<string>([
+          ...entriesData.map((x) => x.user_id),
+          ...gqData.map((x) => x.user_id),
+          ...minutesData.map((x) => x.user_id)
+        ])
+      );
+      if (ids.length === 0) {
+        setRankByUserId({});
+        return;
+      }
+
+      const ptsRes = await supabase.from("leaderboard_points").select("user_id,points").in("user_id", ids);
+      if (cancelled) return;
+      if (ptsRes.error) {
+        // Non-fatal: still render leaderboards, just omit rank labels.
+        setRankByUserId({});
+        return;
+      }
+
+      const map: Record<string, string> = {};
+      for (const row of (ptsRes.data as any[]) ?? []) {
+        const id = row?.user_id;
+        const pts = row?.points;
+        if (typeof id === "string" && typeof pts === "number" && Number.isFinite(pts)) {
+          map[id] = getRank(pts).name;
+        }
+      }
+      setRankByUserId(map);
     });
 
     return () => {
@@ -96,7 +137,7 @@ export default function LeaderboardPage() {
     return data?.publicUrl ?? null;
   }
 
-  function NameCell(props: { name: string; avatar_path?: string | null }) {
+  function NameCell(props: { name: string; avatar_path?: string | null; rank?: string | null }) {
     const url = avatarUrl(props.avatar_path);
     const initial = (props.name || "A").slice(0, 1).toUpperCase();
     return (
@@ -113,7 +154,15 @@ export default function LeaderboardPage() {
             {initial}
           </div>
         )}
-        <div className="truncate">{props.name}</div>
+        <div className="truncate">
+          {props.name}
+          {props.rank ? (
+            <span className="text-slate-400">
+              {" "}
+              | <span className="text-slate-300">{props.rank}</span>
+            </span>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -173,7 +222,11 @@ export default function LeaderboardPage() {
                         <tr key={r.user_id} className="border-t border-slate-800/60 hover:bg-slate-900/20">
                           <td className="py-2">{idx + 1}</td>
                           <td className="py-2">
-                            <NameCell name={r.display_name} avatar_path={r.avatar_path} />
+                            <NameCell
+                              name={r.display_name}
+                              avatar_path={r.avatar_path}
+                              rank={rankByUserId[r.user_id] ?? null}
+                            />
                           </td>
                           <td className="py-2 font-semibold">{r.gq}</td>
                           <td className="py-2">{r.premises}</td>
@@ -205,7 +258,11 @@ export default function LeaderboardPage() {
                         <tr key={r.user_id} className="border-t border-slate-800/60 hover:bg-slate-900/20">
                           <td className="py-2">{idx + 1}</td>
                           <td className="py-2">
-                            <NameCell name={r.display_name ?? "Anonymous"} avatar_path={r.avatar_path} />
+                            <NameCell
+                              name={r.display_name ?? "Anonymous"}
+                              avatar_path={r.avatar_path}
+                              rank={rankByUserId[r.user_id] ?? null}
+                            />
                           </td>
                           <td className="py-2 font-semibold">{(r.total_ms / 60000).toFixed(1)}</td>
                         </tr>
@@ -236,7 +293,11 @@ export default function LeaderboardPage() {
                         <tr key={e.user_id} className="border-t border-slate-800/60 hover:bg-slate-900/20">
                           <td className="py-2">{idx + 1}</td>
                           <td className="py-2">
-                            <NameCell name={e.display_name} avatar_path={e.avatar_path} />
+                            <NameCell
+                              name={e.display_name}
+                              avatar_path={e.avatar_path}
+                              rank={getRank(e.points).name}
+                            />
                           </td>
                           <td className="py-2 font-semibold">{e.points}</td>
                           <td className="py-2 text-slate-400">

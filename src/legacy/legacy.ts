@@ -139,6 +139,8 @@ let savedata = {
     "spoilerConclusion": false,
     "enableBacktrackingLinear": false,
     "minimalMode": false,
+    // UI-wide "Minimalist Mode" (separate from "Minimal Mode" question formatting).
+    "minimalistMode": false,
     "dailyProgressGoal": null,
     "weeklyProgressGoal": null,
     "widePremises": false,
@@ -237,6 +239,7 @@ const compressedSettings = {
     "overrideLinearTime": "linT",
     "enableBacktrackingLinear": "backL",
     "minimalMode": "min",
+    "minimalistMode": "minUI",
     "dailyProgressGoal": "dGoal",
     "weeklyProgressGoal": "wGoal",
     "widePremises": "wide",
@@ -264,6 +267,8 @@ const keySettingMap = {
     "p-7-time": "overrideBinaryTime",
     "p-8": "useMeaningfulWords",
     "p-9": "enableCarouselMode",
+    // Settings-only timer control (used by Minimalist Mode; still safe to expose always).
+    "p-10": "timer",
     "p-11": "enableNegation",
     "p-12": "enableDirection3D",
     "p-12-premises": "overrideDirection3DPremises",
@@ -304,6 +309,7 @@ const keySettingMap = {
     "p-46": "spoilerConclusion",
     "p-47": "enableBacktrackingLinear",
     "p-48": "minimalMode",
+    "p-70": "minimalistMode",
     "p-49": "autoProgressionTrailing",
     "p-50": "autoProgressionPercentSuccess",
     "p-51": "autoProgressionPercentFail",
@@ -9516,6 +9522,7 @@ const timerInput = document.querySelector("#timer-input");
 const timerToggle = document.querySelector("#timer-toggle");
 const timerBar = document.querySelector(".timer__bar");
 const customTimeInfo = document.querySelector(".custom-time-info");
+const timerSimpleReadout = document.querySelector(".timer-simple-readout");
 let timerToggled = false;
 let timerTime = 30;
 let timerCount = 30;
@@ -9578,7 +9585,7 @@ function registerEventHandlers() {
         }
 
         // Number handler
-        if (input.type === "number") {
+        if (input.type === "number" || input.type === "range") {
             input.addEventListener("input", evt => {
 
                 let num = input?.value;
@@ -9610,6 +9617,15 @@ function registerEventHandlers() {
             })
         }
     }
+}
+
+function applyMinimalistModeUi() {
+    const on = Boolean(savedata?.minimalistMode);
+    document.documentElement.classList.toggle("minimalist", on);
+    document.body.classList.toggle("minimalist", on);
+
+    const timerValueEl = document.getElementById("p-10-value");
+    if (timerValueEl) timerValueEl.textContent = `${Math.max(1, Math.floor(+savedata.timer || 1))}s`;
 }
 
 function save() {
@@ -9650,7 +9666,7 @@ function populateSettings() {
                 input.checked = value;
             }
         }
-        else if (input.type === "number") {
+        else if (input.type === "number" || input.type === "range") {
             if (!value && isKeyNullable(id)) {
                 input.value = '';
             } else if (typeof value === "number") {
@@ -9670,6 +9686,8 @@ function populateSettings() {
 
     timerInput.value = savedata.timer;
     timerTime = timerInput.value;
+
+    applyMinimalistModeUi();
 }
 
 function refresh() {
@@ -9910,6 +9928,7 @@ function stopCountDown() {
     timerRunning = false;
     timerCount = findStartingTimerCount();
     timerBar.style.width = '100%';
+    if (timerSimpleReadout) timerSimpleReadout.textContent = `${timerCount}s`;
     clearTimeout(timerInstance);
 }
 
@@ -9925,6 +9944,7 @@ function renderTimerBar() {
         customTimeInfo.innerHTML = '';
     }
     timerBar.style.width = (timerCount / startingTimerCount * 100) + '%';
+    if (timerSimpleReadout) timerSimpleReadout.textContent = `${timerCount}s`;
 }
 
 function animateTimerBar() {

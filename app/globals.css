@@ -33,6 +33,104 @@ body {
   }
 }
 
+/* -------------------------
+   Minimalist Mode (UI-wide)
+   Toggled by legacy setting `savedata.minimalistMode` which adds `.minimalist` to <html>/<body>
+-------------------------- */
+
+.minimalist {
+  --ui-radius-lg: 0px;
+  --ui-radius-md: 0px;
+  --ui-radius-sm: 0px;
+}
+
+/* Minimalist-only blocks in legacy HTML (hidden unless enabled) */
+.minimalist-only {
+  display: none;
+}
+.minimalist .minimalist-only {
+  display: block;
+}
+
+/* Font: simple, readable */
+.minimalist body,
+.minimalist .ffmono,
+.minimalist .inline-input__outer,
+.minimalist .inline-input__inner,
+.minimalist .metal-gear,
+.minimalist .timer {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  letter-spacing: 0.02em;
+  text-shadow: none;
+}
+
+/* Overall theme: calm, low-saturation */
+.minimalist body {
+  background: #0b0f19 !important;
+}
+html.light.minimalist body {
+  background: #f7f7f8 !important;
+}
+.minimalist body::before {
+  opacity: 0.06 !important;
+  background-image: none !important;
+}
+
+/* Layout: squared instead of rounded */
+.minimalist button,
+.minimalist .profile-plus,
+.minimalist .profile-share,
+.minimalist .settings-gear,
+.minimalist .offcanvas-close {
+  border-radius: 0 !important;
+}
+
+/* Sidebars: greyed out and subtle */
+.minimalist .offcanvas,
+.minimalist .progress-container {
+  opacity: 0.32;
+  filter: grayscale(1);
+}
+.minimalist #offcanvas-settings:checked ~ .offcanvas--left,
+.minimalist #offcanvas-history:checked ~ .offcanvas--right,
+.minimalist #offcanvas-credits:checked ~ .offcanvas--right,
+.minimalist #offcanvas-graph:checked ~ .offcanvas--right {
+  opacity: 0.52;
+}
+.minimalist .sidebar-button,
+.minimalist label.open {
+  opacity: 0.45;
+}
+
+/* Reduce heavy effects */
+.minimalist .ui-card,
+.minimalist .ui-header {
+  box-shadow: none !important;
+}
+.minimalist .ui-pill:hover {
+  filter: none;
+}
+
+/* Timer: simplify the in-game control (settings-only slider controls the max time) */
+.minimalist .timer-wrap .inline-input__inner {
+  display: none !important; /* hides #timer-input control */
+}
+.minimalist .timer-wrap #timer-toggle {
+  accent-color: rgba(148, 163, 184, 0.85);
+}
+.minimalist .timer-simple-readout {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  opacity: 0.9;
+}
+.minimalist .timer__bar {
+  background-color: rgba(148, 163, 184, 0.85) !important;
+}
+.minimalist .timer__bar.override {
+  background-color: rgba(100, 116, 139, 0.85) !important;
+}
+
 /* Smooth theme transitions without affecting gameplay timing. */
 body {
   transition: background-color 220ms ease, color 220ms ease;

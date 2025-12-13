@@ -71,6 +71,20 @@
 								</span>
 							</div>
 						</div>
+
+						<!-- Minimalist Mode: settings-only timer slider -->
+						<div class="mb-2 minimalist-only">
+							<div class="inline-input__outer big-input">
+								Timer
+								<span class="inline-input__inner" style="display:flex; align-items:center; gap:0.75rem; width: 100%;">
+									<input id="p-10" type="range" min="5" max="60" step="1" value="30" style="width: 100%;">
+									<span id="p-10-value" style="min-width: 4ch; text-align:right;">30s</span>
+								</span>
+							</div>
+							<div class="explainer" style="margin-top: 0.5rem; opacity: 0.8;">
+								Minimalist Mode disables the on-game timer input; adjust it here.
+							</div>
+						</div>
 						<div class="mb-1">
 							<div class="ctrl__inner">
 								<div>
@@ -557,6 +571,20 @@
 							<div class="mb-1">
 								<div class="ctrl__inner">
 									<div>
+										<input hidden id="p-70" type="checkbox">
+										<label class="switch" for="p-70"></label>
+									</div>
+									<label for="p-70">Minimalist Mode</label>
+								</div>
+								<ul class="explainer" style="margin-top: 0.5rem;">
+									<li>Simple font + squared layout</li>
+									<li>Sidebars become subtle / low-contrast</li>
+									<li>Timer becomes settings-only (slider)</li>
+								</ul>
+							</div>
+							<div class="mb-1">
+								<div class="ctrl__inner">
+									<div>
 										<input hidden id="p-66" type="checkbox">
 										<label class="switch" for="p-66"></label>
 									</div>
@@ -980,6 +1008,7 @@
 						<div class="timer__bar" style="width: 100%"></div>
 						<div class="inline-input__outer" style="position: absolute; top: 0; transform: translate(12px, 12px);">
 							Timer
+							<span class="timer-simple-readout minimalist-only" style="margin-left:auto;"></span>
 							<span class="inline-input__inner">
 								<input id="timer-input" type="number" min="1" value="30" style="width: 6ch">sec
 							</span>

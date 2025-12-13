@@ -8,23 +8,62 @@ export type RankDef = {
   color: string;
 };
 
-export const RANKS: RankDef[] = [
-  { name: "Adept", min: 0, max: 250, color: "#94a3b8" }, // slate-400
-  { name: "Scholar", min: 250, max: 500, color: "#60a5fa" }, // blue-400
-  { name: "Savant", min: 500, max: 750, color: "#22d3ee" }, // cyan-400
-  { name: "Expert", min: 750, max: 1000, color: "#34d399" }, // emerald-400
-  { name: "Mastermind", min: 1000, max: 1250, color: "#a3e635" }, // lime-400
-  { name: "Visionary", min: 1250, max: 1500, color: "#fbbf24" }, // amber-400
-  { name: "Genius", min: 1500, max: 1750, color: "#fb923c" }, // orange-400
-  { name: "Virtuoso", min: 1750, max: 2000, color: "#fb7185" }, // rose-400
-  { name: "Luminary", min: 2000, max: 2250, color: "#f472b6" }, // pink-400
-  { name: "Prodigy", min: 2250, max: 2500, color: "#c084fc" }, // purple-400
-  { name: "Oracle", min: 2500, max: 2750, color: "#a78bfa" }, // violet-400
-  { name: "Sage", min: 2750, max: 3000, color: "#818cf8" }, // indigo-400
-  { name: "Philosopher", min: 3000, max: 3250, color: "#38bdf8" }, // sky-400
-  { name: "Mystic", min: 3250, max: 3500, color: "#2dd4bf" }, // teal-400
-  { name: "Transcendent", min: 3500, max: null, color: "#f0abfc" } // fuchsia-300
-];
+const RANK_NAMES = [
+  "Adept",
+  "Scholar",
+  "Savant",
+  "Expert",
+  "Mastermind",
+  "Visionary",
+  "Genius",
+  "Virtuoso",
+  "Luminary",
+  "Prodigy",
+  "Oracle",
+  "Sage",
+  "Philosopher",
+  "Mystic",
+  "Transcendent"
+] as const;
+
+const RANK_COLORS = [
+  "#94a3b8", // slate-400
+  "#60a5fa", // blue-400
+  "#22d3ee", // cyan-400
+  "#34d399", // emerald-400
+  "#a3e635", // lime-400
+  "#fbbf24", // amber-400
+  "#fb923c", // orange-400
+  "#fb7185", // rose-400
+  "#f472b6", // pink-400
+  "#c084fc", // purple-400
+  "#a78bfa", // violet-400
+  "#818cf8", // indigo-400
+  "#38bdf8", // sky-400
+  "#2dd4bf", // teal-400
+  "#f0abfc" // fuchsia-300
+] as const;
+
+// Rank ranges double in size:
+// Adept: 0-250 (width 250)
+// Scholar: 250-750 (width 500)
+// Savant: 750-1750 (width 1000)
+// ...
+const BASE_RANGE = 250;
+export const RANKS: RankDef[] = (() => {
+  const out: RankDef[] = [];
+  let min = 0;
+  for (let i = 0; i < RANK_NAMES.length; i++) {
+    const name = RANK_NAMES[i];
+    const color = RANK_COLORS[i];
+    const isLast = i === RANK_NAMES.length - 1;
+    const width = BASE_RANGE * 2 ** i;
+    const max = isLast ? null : min + width;
+    out.push({ name, min, max, color });
+    if (max != null) min = max;
+  }
+  return out;
+})();
 
 export function getRankIndex(points: number): number {
   const p = Number.isFinite(points) ? points : 0;
@@ -40,8 +79,9 @@ export function getRank(points: number): RankDef {
 }
 
 export function formatRange(r: RankDef): string {
-  if (r.max == null) return `${r.min}+ pts`;
-  return `${r.min}–${r.max} pts`;
+  const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+  if (r.max == null) return `${fmt.format(r.min)}+ pts`;
+  return `${fmt.format(r.min)}–${fmt.format(r.max)} pts`;
 }
 
 /**
@@ -55,7 +95,9 @@ export function requiredPremisesForRankIndex(rankIndex: number): number {
 export function pointsDeltaFromPremises(premiseCount: number): number {
   const n = Math.floor(premiseCount);
   if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.min(15, n);
+  // Base points are 2^n. To keep values safe in JS/DB, cap exponent at 30 (2^30 ~ 1.07B).
+  const exp = Math.min(30, n);
+  return 2 ** exp;
 }
 
 function clamp(n: number, lo: number, hi: number): number {
@@ -95,7 +137,8 @@ export function pointsMagnitude({
   const carousel = carouselEnabled ? 1.2 : 1.0;
   const raw = base * speed * carousel;
   // Keep integer points; round to nearest.
-  return Math.max(1, Math.round(raw));
+  // Clamp to keep within signed 32-bit-ish magnitude even if multiplied.
+  return Math.max(1, Math.min(2_000_000_000, Math.round(raw)));
 }
 
 

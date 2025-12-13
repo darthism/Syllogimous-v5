@@ -96,7 +96,7 @@ create table if not exists public.leaderboard_points (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null,
   avatar_path text,
-  points integer not null default 0,
+  points bigint not null default 0,
   updated_at timestamptz not null default now()
 );
 
@@ -104,7 +104,25 @@ alter table public.leaderboard_points
   add column if not exists avatar_path text;
 
 alter table public.leaderboard_points
-  add column if not exists points integer not null default 0;
+  add column if not exists points bigint not null default 0;
+
+-- If points existed as integer from an earlier migration, widen to bigint (idempotent).
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'leaderboard_points'
+      and column_name = 'points'
+      and data_type <> 'bigint'
+  ) then
+    alter table public.leaderboard_points
+      alter column points type bigint
+      using points::bigint;
+  end if;
+end
+$$;
 
 create index if not exists leaderboard_points_points_desc on public.leaderboard_points (points desc);
 

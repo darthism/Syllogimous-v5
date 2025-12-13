@@ -369,7 +369,7 @@ button,
   /* Reduce top/bottom padding in the question panels */
   .carousel_display_label-wrapper {
     margin: 0 0.75rem !important;
-    padding: 1.15em 0.75em !important;
+    padding: 1.35em 0.75em !important; /* leave room for the header label */
   }
   .display-inner {
     margin: 0 1rem !important;
@@ -381,6 +381,9 @@ button,
   .display-inner h2 {
     font-size: 0.95em;
     letter-spacing: 0.12em;
+    margin-top: 0 !important; /* legacy uses negative margin; can clip on mobile */
+    top: 0.35rem !important; /* move label down slightly to avoid clipping */
+    line-height: 1.2;
   }
 
   /* Premise area: smaller padding, still scrolls (see flex/scroll rules above) */

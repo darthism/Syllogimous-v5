@@ -94,12 +94,20 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   const scrambleMin = Math.min(...rows.map((r) => (typeof r.scrambleFactor === "number" ? r.scrambleFactor : -Infinity)));
   const countdownMax = Math.max(...rows.map((r) => (typeof r.countdown === "number" ? r.countdown : Infinity)));
   const rightCount = rows.filter((r) => r.correctness === "right").length;
-  const premisesMax = Math.max(...rows.map((r) => (typeof r.premises === "number" ? r.premises : 0)));
+  const premiseNums = rows.map((r) => (typeof r.premises === "number" ? r.premises : NaN));
+  if (premiseNums.some((n) => !Number.isFinite(n))) {
+    // Can't qualify if any of the last 30 rows are missing premise count.
+    return;
+  }
+  const premisesMin = Math.min(...premiseNums);
+  const premisesMax = Math.max(...premiseNums);
+  const samePremises = premisesMin === premisesMax;
 
   const qualifies =
     scrambleMin >= 80 &&
     countdownMax <= 20 &&
     rightCount >= 28 &&
+    samePremises &&
     premisesMax >= 2;
 
   if (!qualifies) {

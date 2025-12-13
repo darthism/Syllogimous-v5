@@ -148,7 +148,7 @@ export default function LeaderboardPage() {
                 <div>
                   <div className="text-sm font-semibold">2D Space (GQ)</div>
                   <div className="text-xs text-slate-400">
-                    Qualify with scramble ≥ 80, timer ≤ 20s, and ≥ 28/30 correct (latest 30).
+                    Qualify with scramble ≥ 80, timer ≤ 20s, ≥ 28/30 correct, and the latest 30 must share the same premise count.
                   </div>
                 </div>
               </div>

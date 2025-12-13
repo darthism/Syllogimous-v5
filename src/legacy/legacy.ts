@@ -5445,11 +5445,13 @@ class SpaceHardMode {
             if (coinFlip()) {
                 newPoint[m] += diffN
                 newPoint[n] += -diffM
-                operations.push(createRotationTemplate(a, b, planeOp, planeName, `<span class="pos-degree">90Â°â†·</span>`));
+                // &deg; = °, &#8635; = ↻
+                operations.push(createRotationTemplate(a, b, planeOp, planeName, `<span class="pos-degree">90&deg;&#8635;</span>`));
             } else {
                 newPoint[m] += -diffN
                 newPoint[n] += diffM
-                operations.push(createRotationTemplate(a, b, planeOp, planeName, `<span class="neg-degree">-90Â°â†º</span>`));
+                // &deg; = °, &#8634; = ↺
+                operations.push(createRotationTemplate(a, b, planeOp, planeName, `<span class="neg-degree">-90&deg;&#8634;</span>`));
             }
             return newPoint;
         }
@@ -5505,12 +5507,17 @@ class SpaceHardMode {
 }
 
 function createMirrorTemplate(a, b, dimension) {
-    const relation = savedata.minimalMode ? (dimension + 'ðŸªž') : `is <span class="highlight">${dimension}</span>-mirrored across`;
+    // Use HTML entities to avoid mojibake from non-ASCII symbols in generated bundle encodings.
+    // &#8596; = ↔
+    const relation = savedata.minimalMode ? `${dimension}&#8596;` : `is <span class="highlight">${dimension}</span>-mirrored across`;
     return `<span class="subject">${b}</span> <span class="relation">${relation}</span> <span class="subject">${a}</span>`;
 }
 
 function createScaleTemplate(a, b, dimension, scale) {
-    const relation = savedata.minimalMode ? (dimension + 'â†”ï¸') : `is <span class="highlight">${dimension}</span>-scaled <span class="highlight">${scale}Ã—</span> from`;
+    // &#8596; = ↔, &times; = ×
+    const relation = savedata.minimalMode
+        ? `${dimension}&#8596;`
+        : `is <span class="highlight">${dimension}</span>-scaled <span class="highlight">${scale}&times;</span> from`;
     return `<span class="subject">${b}</span> <span class="relation">${relation}</span> <span class="subject">${a}</span>`;
 }
 

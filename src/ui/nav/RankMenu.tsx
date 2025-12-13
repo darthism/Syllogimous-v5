@@ -68,7 +68,7 @@ export function RankMenu() {
             </button>
           </div>
 
-          <div className="mt-3 grid gap-1">
+          <div className="mt-3 grid gap-1 max-h-[46vh] overflow-y-auto pr-1 no-scrollbar">
             {RANKS.map((r) => {
               const active = r.name === rank.name;
               return (

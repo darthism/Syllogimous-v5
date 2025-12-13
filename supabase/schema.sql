@@ -247,7 +247,9 @@ on conflict (id) do nothing;
 -- Ensure bucket is public even if it already existed from an earlier migration.
 update storage.buckets set public = true where id = 'avatars';
 
+-- Idempotency: older versions used avatars_owner_read; current version uses avatars_public_read.
 drop policy if exists "avatars_owner_read" on storage.objects;
+drop policy if exists "avatars_public_read" on storage.objects;
 create policy "avatars_public_read"
 on storage.objects for select
 using (

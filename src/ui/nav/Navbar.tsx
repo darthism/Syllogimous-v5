@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { AuthMenu } from "./AuthMenu";
+import { RankMenu } from "./RankMenu";
 
 function NavLink({ href, label }: { href: string; label: string }) {
   const pathname = usePathname();
@@ -39,6 +40,8 @@ export function Navbar() {
                   SyllogimousV5
                 </div>
               </div>
+
+              <RankMenu />
               <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar pr-1">
                 <NavLink href="/" label="Home" />
                 <NavLink href="/stats" label="Stats" />

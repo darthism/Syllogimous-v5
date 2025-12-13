@@ -86,6 +86,14 @@ function enableCloudSyncForLocalStorage() {
 
   proto.setItem = function patchedSetItem(key: string, value: string) {
     originalSetItem.call(this, key, value);
+    // Let React UI (Navbar Rank dropdown, etc.) react to app-state updates in the same tab.
+    try {
+      if (this === localStorage && key === APP_STATE_KEY) {
+        window.dispatchEvent(new CustomEvent("sllgms-app-state", { detail: value }));
+      }
+    } catch {
+      // ignore
+    }
     if (this === localStorage && SYNC_KEYS.has(key)) {
       if (key === APP_STATE_KEY) {
         // Sync settings portion only.

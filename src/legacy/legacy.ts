@@ -10,6 +10,11 @@ import {
   storeProgressCloud
 } from "@/storage/rrtHistory";
 import { maybeUpdateLeaderboards } from "@/leaderboards/update";
+import {
+  getRankIndex,
+  pointsDeltaFromPremises,
+  requiredPremisesForRankIndex
+} from "@/rank/ranks";
 
 export {};
 
@@ -41,6 +46,7 @@ const appStateKey = 'sllgms-v3-app-state';
 
 let appState = {
     "score": 0,
+    "rankPoints": 0,
     "questions": [],
     "backgroundImage": null,
     "gameAreaColor": "#293247CC",
@@ -9605,6 +9611,10 @@ function appStateStartup() {
     const appStateObj = getLocalStorageObj(appStateKey);
     if (appStateObj) {
         Object.assign(appState, appStateObj);
+        if (typeof appState.rankPoints !== "number" || !Number.isFinite(appState.rankPoints)) {
+            appState.rankPoints = 0;
+        }
+        if (appState.rankPoints < 0) appState.rankPoints = 0;
         setLocalStorageObj(appStateKey, appState);
     }
 }
@@ -10185,6 +10195,32 @@ function storeQuestionAndSave() {
     save();
 }
 
+function getPremiseCountForPoints(q) {
+    try {
+        if (Array.isArray(q?.premises)) return q.premises.length;
+        if (typeof q?.premises === "number") return q.premises;
+    } catch { }
+    if (typeof savedata?.premises === "number") return savedata.premises;
+    return 0;
+}
+
+function applyRankPointsForQuestion(q) {
+    const current = (typeof appState.rankPoints === "number" && Number.isFinite(appState.rankPoints)) ? appState.rankPoints : 0;
+    const rankIdx = getRankIndex(current);
+    const requiredPremises = requiredPremisesForRankIndex(rankIdx);
+    const premiseCount = getPremiseCountForPoints(q);
+    if (premiseCount < requiredPremises) return;
+
+    const delta = pointsDeltaFromPremises(premiseCount);
+    if (!delta) return;
+
+    let next = current;
+    if (q.correctness === "right") next += delta;
+    else if (q.correctness === "wrong" || q.correctness === "missed") next -= delta;
+    if (next < 0) next = 0;
+    appState.rankPoints = next;
+}
+
 function checkIfTrue() {
     trueButton.blur();
     if (processingAnswer) {
@@ -10199,6 +10235,7 @@ function checkIfTrue() {
         appState.score--;
         question.correctness = 'wrong';
     }
+    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
     storeQuestionAndSave();
     renderHQL(true);
@@ -10219,6 +10256,7 @@ function checkIfFalse() {
         appState.score--;
         question.correctness = 'wrong';
     }
+    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
     storeQuestionAndSave();
     renderHQL(true);
@@ -10233,6 +10271,7 @@ function timeElapsed() {
     appState.score--;
     question.correctness = 'missed';
     question.answerUser = undefined;
+    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
     storeQuestionAndSave();
     renderHQL(true);

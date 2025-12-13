@@ -32,25 +32,28 @@ export function Navbar() {
     <div className="fixed top-0 left-0 right-0 z-[4000]">
       <div className="mx-auto max-w-6xl px-3 sm:px-4">
         <div className="mt-2 sm:mt-3 rounded-3xl border border-slate-800/60 bg-slate-950/40 backdrop-blur-md shadow-[0_30px_80px_-55px_rgba(0,0,0,0.75)]">
-          <div className="flex items-center justify-between gap-2 px-2 sm:px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 select-none">
-                <div className="h-7 w-7 rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-cyan-400/25 via-slate-950/40 to-fuchsia-400/15 shadow-[0_18px_45px_-30px_rgba(34,211,238,0.55)]" />
-                <div className="text-sm font-semibold tracking-wide bg-gradient-to-r from-slate-100 via-slate-100 to-cyan-100 bg-clip-text text-transparent">
-                  SyllogimousV5
+          {/* On small screens, allow the entire navbar contents to scroll horizontally */}
+          <div className="overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-between gap-2 px-2 sm:px-3 py-2 whitespace-nowrap min-w-max">
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2 select-none">
+                  <div className="h-7 w-7 rounded-2xl border border-cyan-300/25 bg-gradient-to-br from-cyan-400/25 via-slate-950/40 to-fuchsia-400/15 shadow-[0_18px_45px_-30px_rgba(34,211,238,0.55)]" />
+                  <div className="text-sm font-semibold tracking-wide bg-gradient-to-r from-slate-100 via-slate-100 to-cyan-100 bg-clip-text text-transparent">
+                    SyllogimousV5
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <RankMenu />
+                  <NavLink href="/" label="Home" />
+                  <NavLink href="/stats" label="Stats" />
+                  <NavLink href="/leaderboard" label="Leaderboard" />
                 </div>
               </div>
 
-              <RankMenu />
-              <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar pr-1">
-                <NavLink href="/" label="Home" />
-                <NavLink href="/stats" label="Stats" />
-                <NavLink href="/leaderboard" label="Leaderboard" />
+              <div className="flex items-center gap-2">
+                <AuthMenu />
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <AuthMenu />
             </div>
           </div>
         </div>

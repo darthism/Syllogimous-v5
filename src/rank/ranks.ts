@@ -58,4 +58,44 @@ export function pointsDeltaFromPremises(premiseCount: number): number {
   return Math.min(15, n);
 }
 
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+/**
+ * Speed multiplier:
+ * - 20+ seconds -> 1x
+ * - 10 seconds -> 2x (because 20 / 10 = 2)
+ * We clamp to [10s, 20s] so the multiplier stays within [1x, 2x].
+ */
+export function timeMultiplierFromSeconds(elapsedSeconds: number): number {
+  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) return 1;
+  const t = clamp(elapsedSeconds, 10, 20);
+  return 20 / t;
+}
+
+/**
+ * Final point magnitude for a question, before applying sign:
+ * - Base is ±min(premises, 15)
+ * - Multiply by speed factor (1x..2x)
+ * - If carousel mode is enabled, apply a ±20% modifier (same magnitude for gains/losses)
+ */
+export function pointsMagnitude({
+  premiseCount,
+  elapsedSeconds,
+  carouselEnabled
+}: {
+  premiseCount: number;
+  elapsedSeconds: number;
+  carouselEnabled: boolean;
+}): number {
+  const base = pointsDeltaFromPremises(premiseCount);
+  if (!base) return 0;
+  const speed = timeMultiplierFromSeconds(elapsedSeconds);
+  const carousel = carouselEnabled ? 1.2 : 1.0;
+  const raw = base * speed * carousel;
+  // Keep integer points; round to nearest.
+  return Math.max(1, Math.round(raw));
+}
+
 

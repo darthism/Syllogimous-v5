@@ -1,6 +1,13 @@
 "use client";
 
-import { RANKS, formatRange, getRank, getRankIndex, pointsDeltaFromPremises, requiredPremisesForRankIndex } from "@/rank/ranks";
+import {
+  RANKS,
+  formatRange,
+  getRank,
+  getRankIndex,
+  pointsMagnitude,
+  requiredPremisesForRankIndex
+} from "@/rank/ranks";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -111,8 +118,8 @@ export function RankMenu() {
                     <div className="mt-1 text-[11px] text-slate-400">
                       At your rank, points only change on questions with{" "}
                       <span className="text-slate-200 font-semibold">{requiredPremises}+</span>{" "}
-                      premises. Each question gives ±premises points (capped at{" "}
-                      <span className="text-slate-200 font-semibold">15</span>), never below 0.
+                      premises. Base points are ±min(premises, 15), multiplied by speed (1× at ≥20s, up to 2× at 10s),
+                      and carousel adds ±20%. Total never below 0.
                     </div>
                   </div>
                   <button type="button" className="ui-pill" onClick={() => setOpen(false)}>
@@ -146,9 +153,13 @@ export function RankMenu() {
                 </div>
 
                 <div className="mt-3 text-[11px] text-slate-400">
-                  Example: a 9-premise question changes points by{" "}
+                  Example: a 9-premise question at 10s changes points by{" "}
                   <span className="text-slate-200 font-semibold">
-                    {pointsDeltaFromPremises(9)}
+                    {pointsMagnitude({ premiseCount: 9, elapsedSeconds: 10, carouselEnabled: false })}
+                  </span>
+                  {" "} (×2 speed). Carousel adds about +20%:{" "}
+                  <span className="text-slate-200 font-semibold">
+                    {pointsMagnitude({ premiseCount: 9, elapsedSeconds: 10, carouselEnabled: true })}
                   </span>
                   .
                 </div>

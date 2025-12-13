@@ -12,7 +12,7 @@ import {
 import { maybeUpdateLeaderboards } from "@/leaderboards/update";
 import {
   getRankIndex,
-  pointsDeltaFromPremises,
+  pointsMagnitude,
   requiredPremisesForRankIndex
 } from "@/rank/ranks";
 
@@ -10211,7 +10211,14 @@ function applyRankPointsForQuestion(q) {
     const premiseCount = getPremiseCountForPoints(q);
     if (premiseCount < requiredPremises) return;
 
-    const delta = pointsDeltaFromPremises(premiseCount);
+    const startedAt = (typeof q?.startedAt === "number") ? q.startedAt : null;
+    const answeredAt = (typeof q?.answeredAt === "number") ? q.answeredAt : Date.now();
+    const elapsedSeconds = startedAt ? Math.max(0, (answeredAt - startedAt) / 1000) : 0;
+    const delta = pointsMagnitude({
+        premiseCount,
+        elapsedSeconds,
+        carouselEnabled: Boolean(savedata?.enableCarouselMode)
+    });
     if (!delta) return;
 
     let next = current;
@@ -10235,8 +10242,8 @@ function checkIfTrue() {
         appState.score--;
         question.correctness = 'wrong';
     }
-    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
+    applyRankPointsForQuestion(question);
     storeQuestionAndSave();
     renderHQL(true);
     wowFeedback();
@@ -10256,8 +10263,8 @@ function checkIfFalse() {
         appState.score--;
         question.correctness = 'wrong';
     }
-    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
+    applyRankPointsForQuestion(question);
     storeQuestionAndSave();
     renderHQL(true);
     wowFeedback();
@@ -10271,8 +10278,8 @@ function timeElapsed() {
     appState.score--;
     question.correctness = 'missed';
     question.answerUser = undefined;
-    applyRankPointsForQuestion(question);
     question.answeredAt = new Date().getTime();
+    applyRankPointsForQuestion(question);
     storeQuestionAndSave();
     renderHQL(true);
     wowFeedback();

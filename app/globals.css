@@ -13,7 +13,7 @@ body {
   --ui-radius-lg: 24px;
   --ui-radius-md: 18px;
   --ui-radius-sm: 14px;
-  --nav-offset: 5rem; /* matches <main className="pt-20"> */
+  --nav-offset: 5rem; /* matches <main className="pt-20"> (desktop) */
 
   --ui-border-dark: rgba(148, 163, 184, 0.22);
   --ui-border-light: rgba(15, 23, 42, 0.18);
@@ -22,6 +22,15 @@ body {
   --ui-card-light: rgba(255, 255, 255, 0.72);
   --ui-card-light-2: rgba(255, 255, 255, 0.58);
   --ui-shadow: 0 30px 80px -50px rgba(0, 0, 0, 0.75);
+}
+
+@media (max-width: 640px) {
+  :root {
+    --nav-offset: 4rem; /* matches <main className="pt-16"> (mobile) */
+    --ui-radius-lg: 18px;
+    --ui-radius-md: 14px;
+    --ui-radius-sm: 12px;
+  }
 }
 
 /* Smooth theme transitions without affecting gameplay timing. */
@@ -334,6 +343,81 @@ button,
   .ui-input:focus {
     box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
     border-color: rgba(34, 211, 238, 0.40);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ---- Mobile scaling tweaks for the legacy UI ---- */
+@media (max-width: 640px) {
+  /* Use the full width, reduce chrome */
+  .main-view {
+    width: calc(100% - 12px);
+    margin: 0 auto;
+    border-width: 2px !important;
+    letter-spacing: 0.04em;
+  }
+
+  /* Reduce top/bottom padding in the question panels */
+  .carousel_display_label-wrapper {
+    margin: 0 0.75rem !important;
+    padding: 1.15em 0.75em !important;
+  }
+  .display-inner {
+    margin: 0 1rem !important;
+    padding: 0.85rem 1rem !important;
+  }
+
+  /* Keep header labels compact so they don't crowd content */
+  .carousel_display_label-wrapper h2,
+  .display-inner h2 {
+    font-size: 0.95em;
+    letter-spacing: 0.12em;
+  }
+
+  /* Premise area: smaller padding, still scrolls (see flex/scroll rules above) */
+  .display_text {
+    padding: 0.35rem 0.55rem 0 0.1rem !important;
+    line-height: 1.45;
+  }
+
+  /* Timer bar + score scale down a bit */
+  .timer__bar {
+    height: 16px !important;
+  }
+  .score {
+    font-size: 1.05em;
+    gap: 10px;
+  }
+
+  /* Answer buttons: prevent overflow and keep them tappable */
+  .confirmation-buttons {
+    gap: 0.6rem;
+  }
+  .confirmation-true,
+  .confirmation-false {
+    max-width: none;
+    font-size: 1.05em;
+    padding: 0.45rem 0.65rem;
+  }
+
+  /* Side labels can be big; reduce slightly */
+  label.open {
+    padding: 0.75rem;
+    font-size: 0.95em;
+  }
+
+  /* Offcanvas: make sure it fits */
+  .offcanvas {
+    max-width: min(92vw, 480px);
   }
 }
 

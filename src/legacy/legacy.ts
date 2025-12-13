@@ -5514,9 +5514,12 @@ function createMirrorTemplate(a, b, dimension) {
 }
 
 function createScaleTemplate(a, b, dimension, scale) {
+    // Minimal-mode should be unambiguous:
+    // - mirror uses ↔
+    // - scale uses × plus factor
     // &#8596; = ↔, &times; = ×
     const relation = savedata.minimalMode
-        ? `${dimension}&#8596;`
+        ? `${dimension}&times;${scale}`
         : `is <span class="highlight">${dimension}</span>-scaled <span class="highlight">${scale}&times;</span> from`;
     return `<span class="subject">${b}</span> <span class="relation">${relation}</span> <span class="subject">${a}</span>`;
 }

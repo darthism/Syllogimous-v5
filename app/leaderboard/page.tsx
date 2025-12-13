@@ -38,7 +38,7 @@ export default function LeaderboardPage() {
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [gqRows, setGqRows] = useState<GqRow[] | null>(null);
   const [minuteRows, setMinuteRows] = useState<MinutesRow[] | null>(null);
-  const [rankByUserId, setRankByUserId] = useState<Record<string, string>>({});
+  const [rankByUserId, setRankByUserId] = useState<Record<string, { name: string; color: string }>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -113,12 +113,19 @@ export default function LeaderboardPage() {
         return;
       }
 
-      const map: Record<string, string> = {};
+      const map: Record<string, { name: string; color: string }> = {};
       for (const row of (ptsRes.data as any[]) ?? []) {
         const id = row?.user_id;
         const pts = row?.points;
-        if (typeof id === "string" && typeof pts === "number" && Number.isFinite(pts)) {
-          map[id] = getRank(pts).name;
+        const ptsNum =
+          typeof pts === "number"
+            ? pts
+            : typeof pts === "string"
+              ? Number(pts)
+              : null;
+        if (typeof id === "string" && typeof ptsNum === "number" && Number.isFinite(ptsNum)) {
+          const r = getRank(ptsNum);
+          map[id] = { name: r.name, color: r.color };
         }
       }
       setRankByUserId(map);
@@ -137,7 +144,11 @@ export default function LeaderboardPage() {
     return data?.publicUrl ?? null;
   }
 
-  function NameCell(props: { name: string; avatar_path?: string | null; rank?: string | null }) {
+  function NameCell(props: {
+    name: string;
+    avatar_path?: string | null;
+    rank?: { name: string; color: string } | null;
+  }) {
     const url = avatarUrl(props.avatar_path);
     const initial = (props.name || "A").slice(0, 1).toUpperCase();
     return (
@@ -159,7 +170,16 @@ export default function LeaderboardPage() {
           {props.rank ? (
             <span className="text-slate-400">
               {" "}
-              | <span className="text-slate-300">{props.rank}</span>
+              |{" "}
+              <span
+                className="font-semibold tracking-wide"
+                style={{
+                  color: props.rank.color,
+                  textShadow: `0 0 10px ${props.rank.color}99, 0 0 18px ${props.rank.color}55`
+                }}
+              >
+                {props.rank.name}
+              </span>
             </span>
           ) : null}
         </div>
@@ -296,7 +316,10 @@ export default function LeaderboardPage() {
                             <NameCell
                               name={e.display_name}
                               avatar_path={e.avatar_path}
-                              rank={getRank(e.points).name}
+                              rank={(() => {
+                                const r = getRank(e.points);
+                                return { name: r.name, color: r.color };
+                              })()}
                             />
                           </td>
                           <td className="py-2 font-semibold">{e.points}</td>

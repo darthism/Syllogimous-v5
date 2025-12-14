@@ -10118,17 +10118,26 @@ function generateQuestion() {
 
     if (savedata.enableAnalogy && !analogyEnable) {
         alert('ANALOGY needs at least 1 other question class (SYLLOGISM and BINARY do not count).');
-        if (savedata.onlyAnalogy)
-            return;
+        // Don't allow "only analogy" to brick the app.
+        if (savedata.onlyAnalogy) savedata.onlyAnalogy = false;
+        // Also disable analogy until the user enables a compatible base mode.
+        savedata.enableAnalogy = false;
     }
 
     if (savedata.enableBinary && !binaryEnable) {
         alert('BINARY needs at least 2 other question class (ANALOGY do not count).');
-        if (savedata.onlyBinary)
-            return;
+        // Don't allow "only binary" to brick the app.
+        if (savedata.onlyBinary) savedata.onlyBinary = false;
+        // Also disable binary until the user enables enough base modes.
+        savedata.enableBinary = false;
     }
-    if (generators.length === 0)
-        return;
+    if (generators.length === 0) {
+        // Defensive fallback: ensure we can always generate something.
+        // This prevents users from disabling everything and ending up with no input working.
+        try { savedata.onlyAnalogy = false; savedata.onlyBinary = false; } catch (e) {}
+        try { savedata.enableSyllogism = true; } catch (e) {}
+        generators.push(createSyllogismGenerator(quota));
+    }
 
     const totalWeight = generators.reduce((sum, item) => sum + item.weight, 0);
     const randomValue = Math.random() * totalWeight;
@@ -10141,6 +10150,13 @@ function generateQuestion() {
             break;
         }
     }
+    // Extremely defensive: in case of floating point edge or a generator returning nothing.
+    if (!q && generators.length > 0) {
+        try {
+            const g0 = generators[0];
+            q = g0.question.create(g0.premiseCount);
+        } catch (e) {}
+    }
 
     if (!savedata.removeNegationExplainer && /is-negated/.test(JSON.stringify(q)))
         q.premises.unshift('<span class="negation-explainer">Invert the <span class="is-negated">Red</span> text</span>');
@@ -10152,7 +10168,17 @@ function init() {
     stopCountDown();
     question = generateQuestion();
     if (!question) {
-        return;
+        // Last-resort: show a placeholder instead of leaving the app in a broken state.
+        question = {
+            category: "Error",
+            type: "error",
+            startedAt: new Date().getTime(),
+            isValid: true,
+            premises: [
+                "<div class=\"is-connector\" style=\"color:#fca5a5\">Unable to generate a question. Check your settings (enable at least one mode).</div>"
+            ],
+            conclusion: ""
+        };
     }
 
     stopCountDown();
@@ -10362,6 +10388,10 @@ async function checkIfTrue() {
     if (processingAnswer) {
         return;
     }
+    if (!question) {
+        try { init(); } catch (e) { console.error("init failed from checkIfTrue", e); }
+        return;
+    }
     processingAnswer = true;
     question.answerUser = true;
     if (question.isValid) {
@@ -10386,6 +10416,10 @@ async function checkIfTrue() {
 async function checkIfFalse() {
     falseButton.blur();
     if (processingAnswer) {
+        return;
+    }
+    if (!question) {
+        try { init(); } catch (e) { console.error("init failed from checkIfFalse", e); }
         return;
     }
     processingAnswer = true;

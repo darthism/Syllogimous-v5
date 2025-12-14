@@ -10157,11 +10157,13 @@ function fastFeedback(cb, className) {
     removeFastFeedback();
     gameArea.classList.add(className);
     setTimeout(() => {
-        cb();
-        processingAnswer = false;
-        fastFeedbackTimer = setTimeout(() => {
-            removeFastFeedback();
-        }, 1000);
+        const result = cb();
+        Promise.resolve(result).finally(() => {
+            processingAnswer = false;
+            fastFeedbackTimer = setTimeout(() => {
+                removeFastFeedback();
+            }, 1000);
+        });
     }, 350);
 }
 
@@ -10173,8 +10175,10 @@ function wowFeedbackRight(cb) {
         feedbackRight.classList.add("active");
         setTimeout(() => {
             feedbackRight.classList.remove("active");
-            cb();
-            processingAnswer = false;
+            const result = cb();
+            Promise.resolve(result).finally(() => {
+                processingAnswer = false;
+            });
         }, 1000);
     }
 }
@@ -10187,8 +10191,10 @@ function wowFeedbackWrong(cb) {
         feedbackWrong.classList.add("active");
         setTimeout(() => {
             feedbackWrong.classList.remove("active");
-            cb();
-            processingAnswer = false;
+            const result = cb();
+            Promise.resolve(result).finally(() => {
+                processingAnswer = false;
+            });
         }, 1000);
     }
 }
@@ -10201,28 +10207,40 @@ function wowFeedbackMissed(cb) {
         feedbackMissed.classList.add("active");
         setTimeout(() => {
             feedbackMissed.classList.remove("active");
-            cb();
-            processingAnswer = false;
+            const result = cb();
+            Promise.resolve(result).finally(() => {
+                processingAnswer = false;
+            });
         }, 1000);
     }
 }
 
 function wowFeedback() {
+    // Default behavior: advance to next question.
+    const onDone = init;
     if (question.correctness === 'right') {
-        wowFeedbackRight(init);
+        wowFeedbackRight(onDone);
     } else if (question.correctness === 'wrong') {
-        wowFeedbackWrong(init);
+        wowFeedbackWrong(onDone);
     } else {
-        wowFeedbackMissed(init);
+        wowFeedbackMissed(onDone);
     }
 }
 
-function storeQuestionAndSave() {
+async function storeQuestionAndSave() {
     appState.questions.push(question);
-    if (timerToggle.checked) {
-        PROGRESS_STORE.storeCompletedQuestion(question)
+    try {
+        if (timerToggle.checked) {
+            // Ensure the progress history is stored BEFORE we re-render progress UI.
+            await PROGRESS_STORE.storeCompletedQuestion(question);
+            // Re-render the progress UI immediately so dots/targets update right after an answer.
+            await PROGRESS_STORE.renderCurrentProgress(question);
+        }
+    } catch (e) {
+        console.error("Progress store failed", e);
+    } finally {
+        save();
     }
-    save();
 }
 
 function getPremiseCountForPoints(q) {
@@ -10258,7 +10276,7 @@ function applyRankPointsForQuestion(q) {
     appState.rankPoints = next;
 }
 
-function checkIfTrue() {
+async function checkIfTrue() {
     trueButton.blur();
     if (processingAnswer) {
         return;
@@ -10274,12 +10292,17 @@ function checkIfTrue() {
     }
     question.answeredAt = new Date().getTime();
     applyRankPointsForQuestion(question);
-    storeQuestionAndSave();
     renderHQL(true);
-    wowFeedback();
+    // Start saving immediately; only advance to next question after it completes.
+    const storePromise = storeQuestionAndSave();
+    if (question.correctness === 'right') {
+        wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
+    } else {
+        wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+    }
 }
 
-function checkIfFalse() {
+async function checkIfFalse() {
     falseButton.blur();
     if (processingAnswer) {
         return;
@@ -10295,12 +10318,16 @@ function checkIfFalse() {
     }
     question.answeredAt = new Date().getTime();
     applyRankPointsForQuestion(question);
-    storeQuestionAndSave();
     renderHQL(true);
-    wowFeedback();
+    const storePromise = storeQuestionAndSave();
+    if (question.correctness === 'right') {
+        wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
+    } else {
+        wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+    }
 }
 
-function timeElapsed() {
+async function timeElapsed() {
     if (processingAnswer) {
         return;
     }
@@ -10310,9 +10337,9 @@ function timeElapsed() {
     question.answerUser = undefined;
     question.answeredAt = new Date().getTime();
     applyRankPointsForQuestion(question);
-    storeQuestionAndSave();
     renderHQL(true);
-    wowFeedback();
+    const storePromise = storeQuestionAndSave();
+    wowFeedbackMissed(() => storePromise.then(() => init()).catch(() => init()));
 }
 
 function resetApp() {

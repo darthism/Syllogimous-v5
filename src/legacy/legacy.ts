@@ -5128,6 +5128,8 @@ function renderJunkEmojisText(text) {
 }
 
 function renderJunkEmojis(question) {
+    // Defensive: if a generator crashes (e.g., CSP blocks eval), question can be undefined.
+    if (!question || typeof question !== "object") return question;
     question = structuredClone(question);
     if (question.bucket) {
         question.bucket = question.bucket.map(renderJunkEmojisText);
@@ -7171,7 +7173,6 @@ class BinaryQuestion {
         const flip = coinFlip();
         let isValid;
         const operandIndex = Math.floor(Math.random()*operands.length);
-        const operand = operands[operandIndex];
         while (flip !== isValid) {
             let [generator, generator2] = pickRandomItems(pool, 2).picked;
 
@@ -7187,11 +7188,32 @@ class BinaryQuestion {
                 .replace("$a", choice.conclusion)
                 .replace("$b", choice2.conclusion);
 
-            isValid = eval(
-                operand
-                    .replaceAll("a", choice.isValid)
-                    .replaceAll("b", choice2.isValid)
-            );
+            // CSP-safe: avoid eval(). Compute truth table directly.
+            const a = Boolean(choice.isValid);
+            const b = Boolean(choice2.isValid);
+            switch (operandIndex) {
+                case 0: // and
+                    isValid = a && b;
+                    break;
+                case 1: // nand
+                    isValid = !(a && b);
+                    break;
+                case 2: // or
+                    isValid = a || b;
+                    break;
+                case 3: // nor
+                    isValid = !(a || b);
+                    break;
+                case 4: // xor
+                    isValid = (a !== b);
+                    break;
+                case 5: // xnor
+                    isValid = (a === b);
+                    break;
+                default:
+                    isValid = a && b;
+                    break;
+            }
         }
 
         const countdown = getBinaryCountdown();
@@ -7272,7 +7294,66 @@ class NestedBinaryQuestion {
                 .reduce((a, c) => (a[c] = 1, a), {})
         )
         .join('/');
-        const isValid = eval(generated.eval.replaceAll(/(\d+)/g, m => questions[m].isValid));
+        // CSP-safe: avoid eval(). Parse and evaluate boolean expression ourselves.
+        function evalBoolExpr(expr, getVar) {
+            // Tokens: number, '&&', '||', '!', '(', ')'
+            let i = 0;
+            function skip() {
+                while (i < expr.length && /\s/.test(expr[i])) i++;
+            }
+            function match(s) {
+                skip();
+                if (expr.slice(i, i + s.length) === s) {
+                    i += s.length;
+                    return true;
+                }
+                return false;
+            }
+            function parseNumber() {
+                skip();
+                let start = i;
+                while (i < expr.length && /[0-9]/.test(expr[i])) i++;
+                if (start === i) return null;
+                return Number(expr.slice(start, i));
+            }
+            function parsePrimary() {
+                skip();
+                if (match("(")) {
+                    const v = parseOr();
+                    if (!match(")")) throw new Error("Missing ')'");
+                    return v;
+                }
+                const n = parseNumber();
+                if (n == null || !Number.isFinite(n)) throw new Error("Expected number");
+                return Boolean(getVar(n));
+            }
+            function parseNot() {
+                skip();
+                if (match("!")) return !parseNot();
+                return parsePrimary();
+            }
+            function parseAnd() {
+                let left = parseNot();
+                while (true) {
+                    if (match("&&")) left = left && parseNot();
+                    else break;
+                }
+                return left;
+            }
+            function parseOr() {
+                let left = parseAnd();
+                while (true) {
+                    if (match("||")) left = left || parseAnd();
+                    else break;
+                }
+                return left;
+            }
+            const out = parseOr();
+            skip();
+            if (i < expr.length) throw new Error("Unexpected token");
+            return out;
+        }
+        const isValid = evalBoolExpr(generated.eval, (idx) => questions[idx]?.isValid);
         const premises = questions.reduce((a, q) => [ ...a, ...q.premises ], [])
         const conclusion = generated.human.replaceAll(/(\d+)/g, m => questions[m].conclusion);
         const countdown = getBinaryCountdown();
@@ -10329,6 +10410,12 @@ async function checkIfFalse() {
 
 async function timeElapsed() {
     if (processingAnswer) {
+        return;
+    }
+    // Defensive: if init/generation failed, don't crash the timer loop.
+    if (!question) {
+        processingAnswer = false;
+        try { init(); } catch (e) { console.error("init failed after missing question", e); }
         return;
     }
     processingAnswer = true;

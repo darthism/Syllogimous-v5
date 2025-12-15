@@ -10580,7 +10580,7 @@ function wowFeedback() {
 }
 
 async function storeQuestionAndSave() {
-    appState.questions.push(question);
+    // Note: question is already pushed to appState.questions before renderHQL(true)
     // #region agent log
     try {
         if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
@@ -10745,6 +10745,7 @@ async function checkIfTrue() {
         }
         question.answeredAt = new Date().getTime();
         applyRankPointsForQuestion(question);
+        appState.questions.push(question);  // Push BEFORE renderHQL so history shows correctly
         renderHQL(true);
         // Start saving immediately; only advance to next question after it completes.
         const storePromise = storeQuestionAndSave();
@@ -10804,6 +10805,7 @@ async function checkIfFalse() {
         }
         question.answeredAt = new Date().getTime();
         applyRankPointsForQuestion(question);
+        appState.questions.push(question);  // Push BEFORE renderHQL so history shows correctly
         renderHQL(true);
         const storePromise = storeQuestionAndSave();
         if (question.correctness === 'right') {
@@ -10841,6 +10843,7 @@ async function timeElapsed() {
         question.answerUser = undefined;
         question.answeredAt = new Date().getTime();
         applyRankPointsForQuestion(question);
+        appState.questions.push(question);  // Push BEFORE renderHQL so history shows correctly
         renderHQL(true);
         const storePromise = storeQuestionAndSave();
         wowFeedbackMissed(() => storePromise.then(() => init()).catch(() => init()));

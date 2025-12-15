@@ -4,10 +4,33 @@ import { getLocalDisplayName } from "./displayName";
 import { gqFromPremises } from "./gq";
 
 let lastUpdateAt = 0;
+let __dbgLeaderboardCount = 0;
+let __dbgRankPointsReadLogged = false;
 
 function readRankPointsFromLocalStorage(): number {
   try {
-    const raw = localStorage.getItem("sllgms-v3-app-state");
+    const key = "sllgms-v3-app-state";
+    const raw = localStorage.getItem(key);
+    // #region agent log
+    try {
+      if (!__dbgRankPointsReadLogged) {
+        __dbgRankPointsReadLogged = true;
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: 'debug-session',
+            runId: (globalThis as any).__dbgRunId || 'pre-fix',
+            hypothesisId: 'D',
+            location: 'src/leaderboards/update.ts:readRankPointsFromLocalStorage',
+            message: 'read-rankpoints-localstorage',
+            data: { key, hasRaw: !!raw, rawLen: raw ? raw.length : 0 },
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+      }
+    } catch {}
+    // #endregion
     if (!raw) return 0;
     const parsed = JSON.parse(raw);
     const p = (parsed as any)?.rankPoints;
@@ -16,6 +39,18 @@ function readRankPointsFromLocalStorage(): number {
   } catch {
     return 0;
   }
+}
+
+function utcDayStringNow(): string {
+  // YYYY-MM-DD (UTC)
+  return new Date().toISOString().slice(0, 10);
+}
+
+function utcDayStringOffset(day: string, offsetDays: number): string {
+  // day is YYYY-MM-DD (UTC)
+  const d = new Date(`${day}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
 }
 
 type ProgressRow = {
@@ -29,7 +64,27 @@ type ProgressRow = {
 };
 
 export async function maybeUpdateLeaderboards(progressData: any): Promise<void> {
-  if (!isSupabaseConfigured()) return;
+  const configured = isSupabaseConfigured();
+  // #region agent log
+  try {
+    if (__dbgLeaderboardCount < 3) {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'maybeUpdateLeaderboards-entry',
+          data: { configured, progressType: progressData?.type },
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    }
+  } catch {}
+  // #endregion
+  if (!configured) return;
   const now = Date.now();
   if (now - lastUpdateAt < 8000) return; // throttle
   lastUpdateAt = now;
@@ -62,16 +117,46 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     // ignore
   }
 
-  // Ensure minutes row exists and keeps a fresh display_name (totals are updated by DB trigger).
-  try {
-    await supabase
-      .from("leaderboard_minutes")
-      .upsert(
-        { user_id: userId, display_name: displayName, avatar_path: avatarPath } as any,
-        { onConflict: "user_id" }
-      );
-  } catch {
-    // ignore
+  const day = utcDayStringNow();
+
+  // Minutes leaderboards are updated by DB triggers; we only maintain profile metadata for display.
+  if (profileComplete) {
+    try {
+      await supabase
+        .from("leaderboard_minutes")
+        .upsert(
+          { user_id: userId, display_name: displayName, avatar_path: avatarPath } as any,
+          { onConflict: "user_id" }
+        );
+    } catch {
+      // ignore
+    }
+    try {
+      await supabase
+        .from("leaderboard_minutes_daily")
+        .upsert(
+          { user_id: userId, day, display_name: displayName, avatar_path: avatarPath } as any,
+          { onConflict: "user_id,day" }
+        );
+    } catch {
+      // ignore
+    }
+  } else {
+    // Ensure user is not shown if they don't meet requirements.
+    try {
+      await supabase.from("leaderboard_minutes").update({ display_name: null, avatar_path: null } as any).eq("user_id", userId);
+    } catch {
+      // ignore
+    }
+    try {
+      await supabase
+        .from("leaderboard_minutes_daily")
+        .update({ display_name: null, avatar_path: null } as any)
+        .eq("user_id", userId)
+        .eq("day", day);
+    } catch {
+      // ignore
+    }
   }
 
   // Qualification requirement: user must have manually set BOTH username + avatar.
@@ -87,12 +172,37 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     } catch {
       // ignore
     }
+    try {
+      await supabase.from("leaderboard_points_daily").delete().eq("user_id", userId).eq("day", day);
+    } catch {
+      // ignore
+    }
     return;
   }
 
   // Points leaderboard: always keep current points up to date (top 50 is enforced at query time).
   try {
     const points = readRankPointsFromLocalStorage();
+    // #region agent log
+    try {
+      if (__dbgLeaderboardCount < 3) {
+        __dbgLeaderboardCount++;
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: 'debug-session',
+            runId: (globalThis as any).__dbgRunId || 'pre-fix',
+            hypothesisId: 'D',
+            location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+            message: 'points-upsert-attempt',
+            data: { points, profileComplete },
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+      }
+    } catch {}
+    // #endregion
     await supabase.from("leaderboard_points").upsert(
       {
         user_id: userId,
@@ -102,6 +212,72 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
         updated_at: new Date().toISOString()
       } as any,
       { onConflict: "user_id" }
+    );
+
+    // Daily net delta (UTC midnight-based):
+    // - If today's row exists, keep start_points and update end_points/delta_points.
+    // - If it doesn't exist, initialize start_points from yesterday's end_points if available; else fall back to current points.
+    let startPoints: number | null = null;
+    try {
+      const existing = await supabase
+        .from("leaderboard_points_daily")
+        .select("start_points,end_points,delta_points")
+        .eq("user_id", userId)
+        .eq("day", day)
+        .maybeSingle();
+      const s = (existing.data as any)?.start_points;
+      const e = (existing.data as any)?.end_points;
+      const d = (existing.data as any)?.delta_points;
+
+      const sNum = typeof s === "number" ? s : typeof s === "string" ? Number(s) : null;
+      const eNum = typeof e === "number" ? e : typeof e === "string" ? Number(e) : null;
+      const dNum = typeof d === "number" ? d : typeof d === "string" ? Number(d) : null;
+
+      // Migration self-heal:
+      // When we added start_points/end_points to an existing row, Postgres filled them with 0.
+      // That makes delta look like "all-time points". Treat this state as "unset".
+      const looksUnset =
+        (typeof sNum === "number" && Number.isFinite(sNum) && Math.floor(sNum) === 0) &&
+        (eNum == null || (typeof eNum === "number" && Number.isFinite(eNum) && Math.floor(eNum) === 0)) &&
+        (dNum == null || (typeof dNum === "number" && Number.isFinite(dNum) && Math.floor(dNum) === 0));
+
+      if (!looksUnset && typeof sNum === "number" && Number.isFinite(sNum)) {
+        startPoints = Math.floor(sNum);
+      }
+    } catch {
+      // ignore
+    }
+    if (startPoints == null) {
+      const yesterday = utcDayStringOffset(day, -1);
+      try {
+        const prev = await supabase
+          .from("leaderboard_points_daily")
+          .select("end_points")
+          .eq("user_id", userId)
+          .eq("day", yesterday)
+          .maybeSingle();
+        const e = (prev.data as any)?.end_points;
+        const eNum = typeof e === "number" ? e : typeof e === "string" ? Number(e) : null;
+        if (typeof eNum === "number" && Number.isFinite(eNum)) startPoints = Math.floor(eNum);
+      } catch {
+        // ignore
+      }
+    }
+    if (startPoints == null) startPoints = Math.floor(points);
+    const endPoints = Math.floor(points);
+    const deltaPoints = Math.floor(endPoints - startPoints);
+    await supabase.from("leaderboard_points_daily").upsert(
+      {
+        user_id: userId,
+        day,
+        display_name: displayName,
+        avatar_path: avatarPath,
+        start_points: startPoints,
+        end_points: endPoints,
+        delta_points: deltaPoints,
+        updated_at: new Date().toISOString()
+      } as any,
+      { onConflict: "user_id,day" }
     );
   } catch {
     // ignore

@@ -9610,6 +9610,7 @@ let timerCount = 30;
 let timerInstance;
 let timerRunning = false;
 let processingAnswer = false;
+let __dbgInitCount = 0;
 
 const historyList = document.getElementById("history-list");
 const historyButton = document.querySelector(`label.open[for="offcanvas-history"]`);
@@ -9641,6 +9642,31 @@ const spoilerArea = document.getElementById('spoiler-area');
 
 const confirmationButtons = document.querySelector(".confirmation-buttons");
 let imagePromise = Promise.resolve();
+
+// #region agent log
+try {
+    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sessionId: 'debug-session',
+            runId: (globalThis).__dbgRunId || 'pre-fix',
+            hypothesisId: 'A',
+            location: 'src/legacy/legacy.ts:boot',
+            message: 'boot-dom-bindings',
+            data: {
+                hasTrueButton: !!trueButton,
+                hasFalseButton: !!falseButton,
+                hasTimerToggle: !!timerToggle,
+                hasDisplay: !!display,
+                hasGameArea: !!gameArea,
+                hasConfirmationButtons: !!confirmationButtons
+            },
+            timestamp: Date.now()
+        })
+    }).catch(() => { });
+} catch { }
+// #endregion
 
 const keySettingMapInverse = Object.entries(keySettingMap)
     .reduce((a, b) => (a[b[1]] = b[0], a), {});
@@ -10167,6 +10193,31 @@ function generateQuestion() {
 function init() {
     stopCountDown();
     question = generateQuestion();
+    // #region agent log
+    try {
+        if (__dbgInitCount < 3) {
+            __dbgInitCount++;
+            fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'C',
+                    location: 'src/legacy/legacy.ts:init',
+                    message: 'init-generated-question',
+                    data: {
+                        hasQuestion: !!question,
+                        qType: question?.type,
+                        qCategory: question?.category,
+                        processingAnswer
+                    },
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        }
+    } catch { }
+    // #endregion
     if (!question) {
         // Last-resort: show a placeholder instead of leaving the app in a broken state.
         question = {
@@ -10418,6 +10469,23 @@ function applyRankPointsForQuestion(q) {
 
 async function checkIfTrue() {
     trueButton.blur();
+    // #region agent log
+    try {
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'B',
+                location: 'src/legacy/legacy.ts:checkIfTrue',
+                message: 'answer-attempt',
+                data: { processingAnswer, hasQuestion: !!question, qIsValid: question?.isValid, qType: question?.type },
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
     if (processingAnswer) {
         return;
     }
@@ -10454,6 +10522,23 @@ async function checkIfTrue() {
 
 async function checkIfFalse() {
     falseButton.blur();
+    // #region agent log
+    try {
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'B',
+                location: 'src/legacy/legacy.ts:checkIfFalse',
+                message: 'answer-attempt',
+                data: { processingAnswer, hasQuestion: !!question, qIsValid: question?.isValid, qType: question?.type },
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
     if (processingAnswer) {
         return;
     }
@@ -10746,6 +10831,26 @@ let dehoverQueue = [];
 function handleKeyPress(event) {
     const tagName = event.target.tagName.toLowerCase();
     const isEditable = event.target.isContentEditable;
+    // #region agent log
+    try {
+        const codesToLog = new Set(["KeyJ", "KeyK", "Digit1", "Digit2", "ArrowLeft", "ArrowRight"]);
+        if (codesToLog.has(event.code)) {
+            fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'A',
+                    location: 'src/legacy/legacy.ts:handleKeyPress',
+                    message: 'keydown',
+                    data: { code: event.code, tagName, isEditable },
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        }
+    } catch { }
+    // #endregion
     if (tagName === "button" || tagName === "input" || tagName === "textarea" || isEditable) {
         return;
     }

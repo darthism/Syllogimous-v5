@@ -10264,13 +10264,22 @@ function fastFeedback(cb, className) {
     removeFastFeedback();
     gameArea.classList.add(className);
     setTimeout(() => {
-        const result = cb();
-        Promise.resolve(result).finally(() => {
-            processingAnswer = false;
-            fastFeedbackTimer = setTimeout(() => {
-                removeFastFeedback();
-            }, 1000);
-        });
+        let result;
+        try {
+            result = cb();
+        } catch (e) {
+            console.error("fastFeedback callback failed", e);
+            // Never let an exception permanently lock user input.
+            try { init(); } catch (e2) { console.error("init failed after fastFeedback error", e2); }
+        }
+        Promise.resolve(result)
+            .catch(e => console.error("fastFeedback callback promise failed", e))
+            .finally(() => {
+                processingAnswer = false;
+                fastFeedbackTimer = setTimeout(() => {
+                    removeFastFeedback();
+                }, 1000);
+            });
     }, 350);
 }
 
@@ -10282,10 +10291,18 @@ function wowFeedbackRight(cb) {
         feedbackRight.classList.add("active");
         setTimeout(() => {
             feedbackRight.classList.remove("active");
-            const result = cb();
-            Promise.resolve(result).finally(() => {
-                processingAnswer = false;
-            });
+            let result;
+            try {
+                result = cb();
+            } catch (e) {
+                console.error("wowFeedbackRight callback failed", e);
+                try { init(); } catch (e2) { console.error("init failed after wowFeedbackRight error", e2); }
+            }
+            Promise.resolve(result)
+                .catch(e => console.error("wowFeedbackRight callback promise failed", e))
+                .finally(() => {
+                    processingAnswer = false;
+                });
         }, 1000);
     }
 }
@@ -10298,10 +10315,18 @@ function wowFeedbackWrong(cb) {
         feedbackWrong.classList.add("active");
         setTimeout(() => {
             feedbackWrong.classList.remove("active");
-            const result = cb();
-            Promise.resolve(result).finally(() => {
-                processingAnswer = false;
-            });
+            let result;
+            try {
+                result = cb();
+            } catch (e) {
+                console.error("wowFeedbackWrong callback failed", e);
+                try { init(); } catch (e2) { console.error("init failed after wowFeedbackWrong error", e2); }
+            }
+            Promise.resolve(result)
+                .catch(e => console.error("wowFeedbackWrong callback promise failed", e))
+                .finally(() => {
+                    processingAnswer = false;
+                });
         }, 1000);
     }
 }
@@ -10314,10 +10339,18 @@ function wowFeedbackMissed(cb) {
         feedbackMissed.classList.add("active");
         setTimeout(() => {
             feedbackMissed.classList.remove("active");
-            const result = cb();
-            Promise.resolve(result).finally(() => {
-                processingAnswer = false;
-            });
+            let result;
+            try {
+                result = cb();
+            } catch (e) {
+                console.error("wowFeedbackMissed callback failed", e);
+                try { init(); } catch (e2) { console.error("init failed after wowFeedbackMissed error", e2); }
+            }
+            Promise.resolve(result)
+                .catch(e => console.error("wowFeedbackMissed callback promise failed", e))
+                .finally(() => {
+                    processingAnswer = false;
+                });
         }, 1000);
     }
 }
@@ -10392,24 +10425,30 @@ async function checkIfTrue() {
         try { init(); } catch (e) { console.error("init failed from checkIfTrue", e); }
         return;
     }
-    processingAnswer = true;
-    question.answerUser = true;
-    if (question.isValid) {
-        appState.score++;
-        question.correctness = 'right';
-    } else {
-        appState.score--;
-        question.correctness = 'wrong';
-    }
-    question.answeredAt = new Date().getTime();
-    applyRankPointsForQuestion(question);
-    renderHQL(true);
-    // Start saving immediately; only advance to next question after it completes.
-    const storePromise = storeQuestionAndSave();
-    if (question.correctness === 'right') {
-        wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
-    } else {
-        wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+    try {
+        processingAnswer = true;
+        question.answerUser = true;
+        if (question.isValid) {
+            appState.score++;
+            question.correctness = 'right';
+        } else {
+            appState.score--;
+            question.correctness = 'wrong';
+        }
+        question.answeredAt = new Date().getTime();
+        applyRankPointsForQuestion(question);
+        renderHQL(true);
+        // Start saving immediately; only advance to next question after it completes.
+        const storePromise = storeQuestionAndSave();
+        if (question.correctness === 'right') {
+            wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
+        } else {
+            wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+        }
+    } catch (e) {
+        console.error("checkIfTrue failed", e);
+        processingAnswer = false;
+        try { init(); } catch (e2) { console.error("init failed after checkIfTrue error", e2); }
     }
 }
 
@@ -10422,23 +10461,29 @@ async function checkIfFalse() {
         try { init(); } catch (e) { console.error("init failed from checkIfFalse", e); }
         return;
     }
-    processingAnswer = true;
-    question.answerUser = false;
-    if (!question.isValid) {
-        appState.score++;
-        question.correctness = 'right';
-    } else {
-        appState.score--;
-        question.correctness = 'wrong';
-    }
-    question.answeredAt = new Date().getTime();
-    applyRankPointsForQuestion(question);
-    renderHQL(true);
-    const storePromise = storeQuestionAndSave();
-    if (question.correctness === 'right') {
-        wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
-    } else {
-        wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+    try {
+        processingAnswer = true;
+        question.answerUser = false;
+        if (!question.isValid) {
+            appState.score++;
+            question.correctness = 'right';
+        } else {
+            appState.score--;
+            question.correctness = 'wrong';
+        }
+        question.answeredAt = new Date().getTime();
+        applyRankPointsForQuestion(question);
+        renderHQL(true);
+        const storePromise = storeQuestionAndSave();
+        if (question.correctness === 'right') {
+            wowFeedbackRight(() => storePromise.then(() => init()).catch(() => init()));
+        } else {
+            wowFeedbackWrong(() => storePromise.then(() => init()).catch(() => init()));
+        }
+    } catch (e) {
+        console.error("checkIfFalse failed", e);
+        processingAnswer = false;
+        try { init(); } catch (e2) { console.error("init failed after checkIfFalse error", e2); }
     }
 }
 
@@ -10452,15 +10497,21 @@ async function timeElapsed() {
         try { init(); } catch (e) { console.error("init failed after missing question", e); }
         return;
     }
-    processingAnswer = true;
-    appState.score--;
-    question.correctness = 'missed';
-    question.answerUser = undefined;
-    question.answeredAt = new Date().getTime();
-    applyRankPointsForQuestion(question);
-    renderHQL(true);
-    const storePromise = storeQuestionAndSave();
-    wowFeedbackMissed(() => storePromise.then(() => init()).catch(() => init()));
+    try {
+        processingAnswer = true;
+        appState.score--;
+        question.correctness = 'missed';
+        question.answerUser = undefined;
+        question.answeredAt = new Date().getTime();
+        applyRankPointsForQuestion(question);
+        renderHQL(true);
+        const storePromise = storeQuestionAndSave();
+        wowFeedbackMissed(() => storePromise.then(() => init()).catch(() => init()));
+    } catch (e) {
+        console.error("timeElapsed failed", e);
+        processingAnswer = false;
+        try { init(); } catch (e2) { console.error("init failed after timeElapsed error", e2); }
+    }
 }
 
 function resetApp() {

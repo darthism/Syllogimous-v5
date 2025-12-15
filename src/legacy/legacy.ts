@@ -4708,6 +4708,24 @@ function setLocalStorageObj(key, obj) {
     }
 }
 
+// Fix strings that were accidentally saved into the codebase as UTF-8 bytes interpreted as Latin-1/Windows-1252.
+// Example: "ðŸ˜€" should display as an emoji, not as those letters.
+function fixUtf8Mojibake(s) {
+    try {
+        if (typeof s !== "string" || s.length === 0) return s;
+        // Fast path: only attempt decode if it looks like common mojibake prefixes.
+        if (!/[ðâ]/.test(s)) return s;
+        const bytes = Uint8Array.from(s, ch => ch.charCodeAt(0) & 0xff);
+        if (typeof TextDecoder !== "undefined") {
+            return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+        }
+        // Fallback for environments without TextDecoder.
+        return decodeURIComponent(Array.from(bytes).map(b => "%" + b.toString(16).padStart(2, "0")).join(""));
+    } catch {
+        return s;
+    }
+}
+
 function normalizeString(input) {
     return input
         .toLowerCase()
@@ -7604,7 +7622,7 @@ function createStimuliConfigs() {
     if (savedata.useEmoji) {
         stimuliConfigs.push({
             limit: emoji.length,
-            generate: () => pickRandomItems(emoji, 1).picked[0],
+            generate: () => fixUtf8Mojibake(pickRandomItems(emoji, 1).picked[0]),
         });
     };
     if (savedata.useJunkEmoji) {
@@ -7688,8 +7706,8 @@ function createPremiseHTML(premise, allowReversal=true) {
 }
 
 function createBasicPremiseHTML(premise, allowReversal=true) {
-    const relation = savedata.minimalMode ? premise.relationMinimal : premise.relation;
-    const reverse = savedata.minimalMode ? premise.reverseMinimal : premise.reverse;
+    const relation = savedata.minimalMode ? fixUtf8Mojibake(premise.relationMinimal) : premise.relation;
+    const reverse = savedata.minimalMode ? fixUtf8Mojibake(premise.reverseMinimal) : premise.reverse;
     let ps;
     if (!allowReversal || coinFlip()) {
       ps = [

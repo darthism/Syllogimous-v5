@@ -8376,7 +8376,7 @@ const deleteImage = async (id) => {
 const storeProgressData = async (progressData) => {
     // #region agent log
     try {
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -8396,7 +8396,7 @@ const storeProgressData = async (progressData) => {
             const ok = await storeProgressCloud(progressData);
             // #region agent log
             try {
-                fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -8415,7 +8415,7 @@ const storeProgressData = async (progressData) => {
                 // Cloud is the source of truth for graph history.
                 // #region agent log
                 try {
-                    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                    if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -8437,7 +8437,7 @@ const storeProgressData = async (progressData) => {
     }
     // #region agent log
     try {
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -9679,6 +9679,9 @@ let timerInstance;
 let timerRunning = false;
 let processingAnswer = false;
 let __dbgInitCount = 0;
+const __dbgCanIngest =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
 const historyList = document.getElementById("history-list");
 const historyButton = document.querySelector(`label.open[for="offcanvas-history"]`);
@@ -9713,7 +9716,7 @@ let imagePromise = Promise.resolve();
 
 // #region agent log
 try {
-    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+    if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -10265,7 +10268,7 @@ function init() {
     try {
         if (__dbgInitCount < 3) {
             __dbgInitCount++;
-            fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -10539,7 +10542,7 @@ async function checkIfTrue() {
     trueButton.blur();
     // #region agent log
     try {
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -10592,7 +10595,7 @@ async function checkIfFalse() {
     falseButton.blur();
     // #region agent log
     try {
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -10903,7 +10906,7 @@ function handleKeyPress(event) {
     try {
         const codesToLog = new Set(["KeyJ", "KeyK", "Digit1", "Digit2", "ArrowLeft", "ArrowRight"]);
         if (codesToLog.has(event.code)) {
-            fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -6,6 +6,9 @@ import { gqFromPremises } from "./gq";
 let lastUpdateAt = 0;
 let __dbgLeaderboardCount = 0;
 let __dbgRankPointsReadLogged = false;
+const __dbgCanIngest =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
 function readRankPointsFromLocalStorage(): number {
   try {
@@ -15,7 +18,7 @@ function readRankPointsFromLocalStorage(): number {
     try {
       if (!__dbgRankPointsReadLogged) {
         __dbgRankPointsReadLogged = true;
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -68,7 +71,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   // #region agent log
   try {
     if (__dbgLeaderboardCount < 3) {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -87,7 +90,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   if (!configured) {
     // #region agent log
     try {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,7 +111,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   if (now - lastUpdateAt < 8000) {
     // #region agent log
     try {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,7 +134,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   if (!supabase) {
     // #region agent log
     try {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,7 +155,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   if (!userId) {
     // #region agent log
     try {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -196,7 +199,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   const day = utcDayStringNow();
   // #region agent log
   try {
-    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+    if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -257,7 +260,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   if (!profileComplete) {
     // #region agent log
     try {
-      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -297,7 +300,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     try {
       if (__dbgLeaderboardCount < 3) {
         __dbgLeaderboardCount++;
-        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -10729,6 +10729,12 @@ async function checkIfTrue() {
     }
     try {
         processingAnswer = true;
+        // Extra guard: if question somehow became invalid after outer check
+        if (!question || typeof question !== 'object') {
+            processingAnswer = false;
+            try { init(); } catch (e) { console.error("init failed from checkIfTrue (inner guard)", e); }
+            return;
+        }
         question.answerUser = true;
         if (question.isValid) {
             appState.score++;
@@ -10782,6 +10788,12 @@ async function checkIfFalse() {
     }
     try {
         processingAnswer = true;
+        // Extra guard: if question somehow became invalid after outer check
+        if (!question || typeof question !== 'object') {
+            processingAnswer = false;
+            try { init(); } catch (e) { console.error("init failed from checkIfFalse (inner guard)", e); }
+            return;
+        }
         question.answerUser = false;
         if (!question.isValid) {
             appState.score++;
@@ -10818,6 +10830,12 @@ async function timeElapsed() {
     }
     try {
         processingAnswer = true;
+        // Extra guard: if question somehow became invalid after outer check
+        if (!question || typeof question !== 'object') {
+            processingAnswer = false;
+            try { init(); } catch (e) { console.error("init failed from timeElapsed (inner guard)", e); }
+            return;
+        }
         appState.score--;
         question.correctness = 'missed';
         question.answerUser = undefined;

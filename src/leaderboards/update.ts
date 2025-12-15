@@ -84,15 +84,91 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     }
   } catch {}
   // #endregion
-  if (!configured) return;
+  if (!configured) {
+    // #region agent log
+    try {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'early-return:not-configured',
+          data: {},
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    } catch {}
+    // #endregion
+    return;
+  }
   const now = Date.now();
-  if (now - lastUpdateAt < 8000) return; // throttle
+  if (now - lastUpdateAt < 8000) {
+    // #region agent log
+    try {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'early-return:throttled',
+          data: { msSinceLast: now - lastUpdateAt },
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    } catch {}
+    // #endregion
+    return; // throttle
+  }
   lastUpdateAt = now;
 
   const supabase = getSupabaseClient();
-  if (!supabase) return;
+  if (!supabase) {
+    // #region agent log
+    try {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'early-return:no-supabase-client',
+          data: {},
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    } catch {}
+    // #endregion
+    return;
+  }
   const userId = await ensureSupabaseSession();
-  if (!userId) return;
+  if (!userId) {
+    // #region agent log
+    try {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'early-return:no-session',
+          data: {},
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    } catch {}
+    // #endregion
+    return;
+  }
 
   let displayName = getLocalDisplayName();
   let avatarPath: string | null = null;
@@ -118,6 +194,23 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   }
 
   const day = utcDayStringNow();
+  // #region agent log
+  try {
+    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'debug-session',
+        runId: (globalThis as any).__dbgRunId || 'pre-fix',
+        hypothesisId: 'E',
+        location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+        message: 'profile-complete-evaluated',
+        data: { profileComplete },
+        timestamp: Date.now()
+      })
+    }).catch(() => {});
+  } catch {}
+  // #endregion
 
   // Minutes leaderboards are updated by DB triggers; we only maintain profile metadata for display.
   if (profileComplete) {
@@ -162,6 +255,23 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
   // Qualification requirement: user must have manually set BOTH username + avatar.
   // If not, ensure they do not appear on any leaderboard that uses our updater.
   if (!profileComplete) {
+    // #region agent log
+    try {
+      fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'debug-session',
+          runId: (globalThis as any).__dbgRunId || 'pre-fix',
+          hypothesisId: 'E',
+          location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
+          message: 'early-return:profile-incomplete',
+          data: {},
+          timestamp: Date.now()
+        })
+      }).catch(() => {});
+    } catch {}
+    // #endregion
     try {
       await supabase.from("leaderboard_2d_gq").delete().eq("user_id", userId);
     } catch {

@@ -8374,16 +8374,84 @@ const deleteImage = async (id) => {
 };
 
 const storeProgressData = async (progressData) => {
+    // #region agent log
+    try {
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'F',
+                location: 'src/legacy/legacy.ts:storeProgressData',
+                message: 'storeProgressData-entry',
+                data: { configured: isSupabaseConfigured(), type: progressData?.type },
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
     if (isSupabaseConfigured()) {
         try {
             const ok = await storeProgressCloud(progressData);
+            // #region agent log
+            try {
+                fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'debug-session',
+                        runId: (globalThis).__dbgRunId || 'pre-fix',
+                        hypothesisId: 'F',
+                        location: 'src/legacy/legacy.ts:storeProgressData',
+                        message: 'storeProgressCloud-result',
+                        data: { ok: !!ok },
+                        timestamp: Date.now()
+                    })
+                }).catch(() => { });
+            } catch { }
+            // #endregion
             if (ok) {
                 // Cloud is the source of truth for graph history.
+                // #region agent log
+                try {
+                    fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: 'debug-session',
+                            runId: (globalThis).__dbgRunId || 'pre-fix',
+                            hypothesisId: 'F',
+                            location: 'src/legacy/legacy.ts:storeProgressData',
+                            message: 'calling-maybeUpdateLeaderboards',
+                            data: {},
+                            timestamp: Date.now()
+                        })
+                    }).catch(() => { });
+                } catch { }
+                // #endregion
                 try { void maybeUpdateLeaderboards(progressData); } catch (e) {}
                 return 'RRTHistory stored successfully!';
             }
         } catch (e) {}
     }
+    // #region agent log
+    try {
+        fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'F',
+                location: 'src/legacy/legacy.ts:storeProgressData',
+                message: 'falling-back-to-local-progress-store',
+                data: {},
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
     return await storeProgressDataLocal(progressData);
 };
 

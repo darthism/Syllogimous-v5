@@ -4667,7 +4667,45 @@ function getLocalStorageObj(key) {
 }
 
 function setLocalStorageObj(key, obj) {
-    localStorage.setItem(key, JSON.stringify(obj));
+    // #region agent log
+    try {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'G',
+                location: 'src/legacy/legacy.ts:setLocalStorageObj',
+                message: 'localStorage-setItem-attempt',
+                data: { key, jsonLen: (() => { try { return JSON.stringify(obj).length; } catch { return -1; } })() },
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
+    try {
+        localStorage.setItem(key, JSON.stringify(obj));
+    } catch (e) {
+        // #region agent log
+        try {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'G',
+                    location: 'src/legacy/legacy.ts:setLocalStorageObj',
+                    message: 'localStorage-setItem-error',
+                    data: { key, name: (e as any)?.name, message: String((e as any)?.message || e) },
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        } catch { }
+        // #endregion
+        throw e;
+    }
 }
 
 function normalizeString(input) {
@@ -9444,11 +9482,45 @@ class ProgressStore {
     }
 
     async storeCompletedQuestion(question) {
+        // #region agent log
+        try {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'I',
+                    location: 'src/legacy/legacy.ts:ProgressStore.storeCompletedQuestion',
+                    message: 'storeCompletedQuestion-start',
+                    data: { type: question?.type, correctness: question?.correctness },
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        } catch { }
+        // #endregion
         const q = this.convertForDatabase(question);
         if (savedata.autoProgression) {
             await this.determineLevelChange(q);
         }
         await storeProgressData(q);
+        // #region agent log
+        try {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'I',
+                    location: 'src/legacy/legacy.ts:ProgressStore.storeCompletedQuestion',
+                    message: 'storeCompletedQuestion-finished',
+                    data: {},
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        } catch { }
+        // #endregion
     }
 
     success(q, trailingProgress, successes, type) {
@@ -10491,17 +10563,90 @@ function wowFeedback() {
 
 async function storeQuestionAndSave() {
     appState.questions.push(question);
+    // #region agent log
+    try {
+        if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sessionId: 'debug-session',
+                runId: (globalThis).__dbgRunId || 'pre-fix',
+                hypothesisId: 'H',
+                location: 'src/legacy/legacy.ts:storeQuestionAndSave',
+                message: 'storeQuestionAndSave-start',
+                data: {
+                    timerChecked: !!timerToggle?.checked,
+                    qType: question?.type,
+                    correctness: question?.correctness,
+                    rankPoints: appState?.rankPoints
+                },
+                timestamp: Date.now()
+            })
+        }).catch(() => { });
+    } catch { }
+    // #endregion
     try {
         if (timerToggle.checked) {
             // Ensure the progress history is stored BEFORE we re-render progress UI.
+            // #region agent log
+            try {
+                if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'debug-session',
+                        runId: (globalThis).__dbgRunId || 'pre-fix',
+                        hypothesisId: 'H',
+                        location: 'src/legacy/legacy.ts:storeQuestionAndSave',
+                        message: 'await-storeCompletedQuestion',
+                        data: {},
+                        timestamp: Date.now()
+                    })
+                }).catch(() => { });
+            } catch { }
+            // #endregion
             await PROGRESS_STORE.storeCompletedQuestion(question);
             // Re-render the progress UI immediately so dots/targets update right after an answer.
+            // #region agent log
+            try {
+                if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'debug-session',
+                        runId: (globalThis).__dbgRunId || 'pre-fix',
+                        hypothesisId: 'H',
+                        location: 'src/legacy/legacy.ts:storeQuestionAndSave',
+                        message: 'await-renderCurrentProgress',
+                        data: {},
+                        timestamp: Date.now()
+                    })
+                }).catch(() => { });
+            } catch { }
+            // #endregion
             await PROGRESS_STORE.renderCurrentProgress(question);
         }
     } catch (e) {
         console.error("Progress store failed", e);
     } finally {
         save();
+        // #region agent log
+        try {
+            if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId: 'debug-session',
+                    runId: (globalThis).__dbgRunId || 'pre-fix',
+                    hypothesisId: 'H',
+                    location: 'src/legacy/legacy.ts:storeQuestionAndSave',
+                    message: 'storeQuestionAndSave-finished',
+                    data: {},
+                    timestamp: Date.now()
+                })
+            }).catch(() => { });
+        } catch { }
+        // #endregion
     }
 }
 

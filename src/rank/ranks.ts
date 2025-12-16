@@ -9,39 +9,44 @@ export type RankDef = {
 };
 
 const RANK_NAMES = [
-  "Adept",
-  "Scholar",
-  "Savant",
-  "Expert",
-  "Mastermind",
-  "Visionary",
-  "Genius",
-  "Virtuoso",
-  "Luminary",
-  "Prodigy",
-  "Oracle",
-  "Sage",
-  "Philosopher",
-  "Mystic",
-  "Transcendent"
+  "Bloom I",
+  "Bloom II",
+  "Bloom III",
+  "Focus I",
+  "Focus II",
+  "Focus III",
+  "Insight I",
+  "Insight II",
+  "Insight III",
+  "Intuition I",
+  "Intuition II",
+  "Intuition III",
+  "Legend I",
+  "Legend II",
+  "Legend III"
 ] as const;
 
 const RANK_COLORS = [
-  "#94a3b8", // slate-400
+  // Bloom League (green tones)
+  "#86efac", // green-300
+  "#4ade80", // green-400
+  "#22c55e", // green-500
+  // Focus League (blue tones)
+  "#93c5fd", // blue-300
   "#60a5fa", // blue-400
-  "#22d3ee", // cyan-400
-  "#34d399", // emerald-400
-  "#a3e635", // lime-400
-  "#fbbf24", // amber-400
-  "#fb923c", // orange-400
-  "#fb7185", // rose-400
-  "#f472b6", // pink-400
+  "#3b82f6", // blue-500
+  // Insight League (purple tones)
+  "#d8b4fe", // purple-300
   "#c084fc", // purple-400
-  "#a78bfa", // violet-400
-  "#818cf8", // indigo-400
-  "#38bdf8", // sky-400
-  "#2dd4bf", // teal-400
-  "#f0abfc" // fuchsia-300
+  "#a855f7", // purple-500
+  // Intuition League (amber/gold tones)
+  "#fcd34d", // amber-300
+  "#fbbf24", // amber-400
+  "#f59e0b", // amber-500
+  // Legend League (rose/red tones)
+  "#fda4af", // rose-300
+  "#fb7185", // rose-400
+  "#f43f5e"  // rose-500
 ] as const;
 
 // Rank ranges double in size:

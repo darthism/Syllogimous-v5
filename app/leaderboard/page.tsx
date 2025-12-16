@@ -1,11 +1,31 @@
 "use client";
 
 import { getSupabaseClient, isSupabaseConfigured } from "@/supabase/client";
-import { getRank } from "@/rank/ranks";
+import { getRank, RANKS } from "@/rank/ranks";
 import { useEffect, useState } from "react";
 
 type Period = "today" | "all";
 type Category = "points" | "minutes" | "gq";
+type League = "bloom" | "focus" | "insight" | "intuition" | "legend";
+
+const LEAGUES: { id: League; name: string; minRank: number; maxRank: number; color: string }[] = [
+  { id: "bloom", name: "Bloom", minRank: 0, maxRank: 2, color: "#4ade80" },
+  { id: "focus", name: "Focus", minRank: 3, maxRank: 5, color: "#60a5fa" },
+  { id: "insight", name: "Insight", minRank: 6, maxRank: 8, color: "#c084fc" },
+  { id: "intuition", name: "Intuition", minRank: 9, maxRank: 11, color: "#fbbf24" },
+  { id: "legend", name: "Legend", minRank: 12, maxRank: 14, color: "#fb7185" },
+];
+
+function getLeagueFromPoints(points: number): League {
+  // Determine which league based on total points
+  const rankIdx = RANKS.findIndex((r) => points >= r.min && (r.max == null || points < r.max));
+  if (rankIdx < 0) return "bloom";
+  if (rankIdx <= 2) return "bloom";
+  if (rankIdx <= 5) return "focus";
+  if (rankIdx <= 8) return "insight";
+  if (rankIdx <= 11) return "intuition";
+  return "legend";
+}
 
 type Entry = {
   user_id: string;
@@ -53,6 +73,7 @@ const TOP_N = 50;
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("today");
   const [category, setCategory] = useState<Category>("points");
+  const [league, setLeague] = useState<League>("bloom");
 
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [gqRows, setGqRows] = useState<GqRow[] | null>(null);
@@ -60,6 +81,7 @@ export default function LeaderboardPage() {
   const [minuteDailyRows, setMinuteDailyRows] = useState<MinutesDailyRow[] | null>(null);
   const [pointsDailyRows, setPointsDailyRows] = useState<PointsDailyRow[] | null>(null);
   const [rankByUserId, setRankByUserId] = useState<Record<string, { name: string; color: string }>>({});
+  const [pointsByUserId, setPointsByUserId] = useState<Record<string, number>>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -161,6 +183,7 @@ export default function LeaderboardPage() {
       }
 
       const map: Record<string, { name: string; color: string }> = {};
+      const ptsMap: Record<string, number> = {};
       for (const row of (ptsRes.data as any[]) ?? []) {
         const id = row?.user_id;
         const pts = row?.points;
@@ -173,9 +196,11 @@ export default function LeaderboardPage() {
         if (typeof id === "string" && typeof ptsNum === "number" && Number.isFinite(ptsNum)) {
           const r = getRank(ptsNum);
           map[id] = { name: r.name, color: r.color };
+          ptsMap[id] = ptsNum;
         }
       }
       setRankByUserId(map);
+      setPointsByUserId(ptsMap);
     });
 
     return () => {
@@ -308,51 +333,75 @@ export default function LeaderboardPage() {
               period === "today" ? (
                 <div>
                   <div className="text-sm font-semibold mb-2">Net points gained today (UTC)</div>
-                  <div className="text-xs text-slate-400 mb-3">
-                    Computed as (today end points − today start points). Start points come from yesterday’s end points when available.
+                  <div className="text-xs text-slate-400 mb-2">
+                    Computed as (today end points − today start points). Filtered by league.
                   </div>
-                  {pointsDailyRows.length === 0 ? (
-                    <div className="text-sm text-slate-300">No entries yet today.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="text-slate-300">
-                          <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Name</th>
-                            <th className="py-2 text-left">Net</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {pointsDailyRows.map((r, idx) => {
-                            const net = r.delta_points as any;
-                            const netNum =
-                              typeof net === "number" ? net : typeof net === "string" ? Number(net) : 0;
-                            const s = netNum >= 0 ? `+${netNum}` : String(netNum);
-                            return (
-                              <tr
-                                key={`${r.user_id}-${r.day}`}
-                                className="border-t border-slate-800/60 hover:bg-slate-900/20"
-                              >
-                                <td className="py-2">{idx + 1}</td>
-                                <td className="py-2">
-                                  <NameCell
-                                    name={r.display_name}
-                                    avatar_path={r.avatar_path}
-                                    rank={rankByUserId[r.user_id] ?? null}
-                                    updated_at={r.updated_at}
-                                  />
-                                </td>
-                                <td className={`py-2 font-semibold ${netNum >= 0 ? "text-emerald-200" : "text-rose-200"}`}>
-                                  {s}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {LEAGUES.map((l) => (
+                      <button
+                        key={l.id}
+                        className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+                          league === l.id
+                            ? "border-slate-600 bg-slate-800/80"
+                            : "border-slate-800 bg-transparent hover:bg-slate-900/40"
+                        }`}
+                        style={{ color: league === l.id ? l.color : undefined }}
+                        onClick={() => setLeague(l.id)}
+                      >
+                        {l.name}
+                      </button>
+                    ))}
+                  </div>
+                  {(() => {
+                    const filtered = pointsDailyRows.filter((r) => {
+                      const pts = pointsByUserId[r.user_id];
+                      if (typeof pts !== "number") return false;
+                      return getLeagueFromPoints(pts) === league;
+                    });
+                    if (filtered.length === 0) {
+                      return <div className="text-sm text-slate-300">No entries in {LEAGUES.find((l) => l.id === league)?.name} League today.</div>;
+                    }
+                    return (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="text-slate-300">
+                            <tr>
+                              <th className="py-2 text-left">#</th>
+                              <th className="py-2 text-left">Name</th>
+                              <th className="py-2 text-left">Net</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filtered.map((r, idx) => {
+                              const net = r.delta_points as any;
+                              const netNum =
+                                typeof net === "number" ? net : typeof net === "string" ? Number(net) : 0;
+                              const s = netNum >= 0 ? `+${netNum}` : String(netNum);
+                              return (
+                                <tr
+                                  key={`${r.user_id}-${r.day}`}
+                                  className="border-t border-slate-800/60 hover:bg-slate-900/20"
+                                >
+                                  <td className="py-2">{idx + 1}</td>
+                                  <td className="py-2">
+                                    <NameCell
+                                      name={r.display_name}
+                                      avatar_path={r.avatar_path}
+                                      rank={rankByUserId[r.user_id] ?? null}
+                                      updated_at={r.updated_at}
+                                    />
+                                  </td>
+                                  <td className={`py-2 font-semibold ${netNum >= 0 ? "text-emerald-200" : "text-rose-200"}`}>
+                                    {s}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div>
@@ -399,37 +448,61 @@ export default function LeaderboardPage() {
               period === "today" ? (
                 <div>
                   <div className="text-sm font-semibold mb-2">Minutes played today (UTC)</div>
-                  {minuteDailyRows.length === 0 ? (
-                    <div className="text-sm text-slate-300">No minutes recorded yet today.</div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="text-slate-300">
-                          <tr>
-                            <th className="py-2 text-left">#</th>
-                            <th className="py-2 text-left">Name</th>
-                            <th className="py-2 text-left">Minutes</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {minuteDailyRows.map((r, idx) => (
-                            <tr key={`${r.user_id}-${r.day}`} className="border-t border-slate-800/60 hover:bg-slate-900/20">
-                              <td className="py-2">{idx + 1}</td>
-                              <td className="py-2">
-                                <NameCell
-                                  name={r.display_name ?? "Anonymous"}
-                                  avatar_path={r.avatar_path}
-                                  rank={rankByUserId[r.user_id] ?? null}
-                                  updated_at={r.updated_at}
-                                />
-                              </td>
-                              <td className="py-2 font-semibold">{(r.total_ms / 60000).toFixed(1)}</td>
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {LEAGUES.map((l) => (
+                      <button
+                        key={l.id}
+                        className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors ${
+                          league === l.id
+                            ? "border-slate-600 bg-slate-800/80"
+                            : "border-slate-800 bg-transparent hover:bg-slate-900/40"
+                        }`}
+                        style={{ color: league === l.id ? l.color : undefined }}
+                        onClick={() => setLeague(l.id)}
+                      >
+                        {l.name}
+                      </button>
+                    ))}
+                  </div>
+                  {(() => {
+                    const filtered = minuteDailyRows.filter((r) => {
+                      const pts = pointsByUserId[r.user_id];
+                      if (typeof pts !== "number") return false;
+                      return getLeagueFromPoints(pts) === league;
+                    });
+                    if (filtered.length === 0) {
+                      return <div className="text-sm text-slate-300">No minutes in {LEAGUES.find((l) => l.id === league)?.name} League today.</div>;
+                    }
+                    return (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="text-slate-300">
+                            <tr>
+                              <th className="py-2 text-left">#</th>
+                              <th className="py-2 text-left">Name</th>
+                              <th className="py-2 text-left">Minutes</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                          </thead>
+                          <tbody>
+                            {filtered.map((r, idx) => (
+                              <tr key={`${r.user_id}-${r.day}`} className="border-t border-slate-800/60 hover:bg-slate-900/20">
+                                <td className="py-2">{idx + 1}</td>
+                                <td className="py-2">
+                                  <NameCell
+                                    name={r.display_name ?? "Anonymous"}
+                                    avatar_path={r.avatar_path}
+                                    rank={rankByUserId[r.user_id] ?? null}
+                                    updated_at={r.updated_at}
+                                  />
+                                </td>
+                                <td className="py-2 font-semibold">{(r.total_ms / 60000).toFixed(1)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div>

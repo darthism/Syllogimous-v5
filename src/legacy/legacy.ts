@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+﻿﻿﻿﻿// @ts-nocheck
 /* eslint-disable */
 
 import { isSupabaseConfigured } from "@/supabase/client";
@@ -4448,9 +4448,9 @@ function threeDToTriangle(coord) {
     }
 
     if (coord[2] === 1) {
-        return 'â–¼';
+        return '▼';
     } else if (coord[2] === -1) {
-        return 'â–²';
+        return '▲';
     } else {
         return '<i class="ci-Wifi_None"></i>';
     }
@@ -4462,9 +4462,9 @@ function fourDToArrow(coord) {
     }
 
     if (coord[3] === 1) {
-        return 'â—€';
+        return '◀';
     } else if (coord[3] === -1) {
-        return 'â–¶';
+        return '▶';
     } else {
         return '<i class="ci-Wifi_None"></i>';
     }
@@ -6462,7 +6462,7 @@ function createSamePremise(a, b) {
         relation: 'is same as',
         reverse: 'is opposite of',
         relationMinimal: '=',
-        reverseMinimal: 'â˜',
+        reverseMinimal: '≠',
     }
 }
 
@@ -6472,7 +6472,7 @@ function createOppositePremise(a, b) {
         end: b,
         relation: 'is opposite of',
         reverse: 'is same as',
-        relationMinimal: 'â˜',
+        relationMinimal: '≠',
         reverseMinimal: '=',
     }
 }
@@ -6727,7 +6727,7 @@ class LinearGenerator {
 
 const MORE_LESS = new LinearGenerator('Comparison', 'is less than', '<', 'is more than', '>', 'is equal to', '=');
 const BEFORE_AFTER = new LinearGenerator('Temporal', 'is before', '[svg]4[/svg]', 'is after', '[svg]5[/svg]', 'is at', '=');
-const CONTAINS_WITHIN = new LinearGenerator('Contains', 'contains', 'âŠƒ', 'is within', 'âŠ‚', 'is the same as', '=');
+const CONTAINS_WITHIN = new LinearGenerator('Contains', 'contains', '⊃', 'is within', '⊂', 'is the same as', '=');
 const LEFT_RIGHT = new LinearGenerator('Horizontal', 'is left of', '[svg]9[/svg]', 'is right of', '[svg]8[/svg]', 'is at', '=');
 const TOP_UNDER = new LinearGenerator('Vertical', 'is on top of', '[svg]7[/svg]', 'is under', '[svg]6[/svg]', 'is at', '=');
 
@@ -7732,10 +7732,10 @@ function createWidePremiseHTML(premise, allowReversal=true) {
     if (right.end === left.start) {
         [left, right] = [right, left];
     }
-    const leftRelation = savedata.minimalMode ? left.relationMinimal : left.relation;
-    const leftReverse = savedata.minimalMode ? left.reverseMinimal : left.reverse;
-    const rightRelation = savedata.minimalMode ? right.relationMinimal : right.relation;
-    const rightReverse = savedata.minimalMode ? right.reverseMinimal : right.reverse;
+    const leftRelation = savedata.minimalMode ? fixUtf8Mojibake(left.relationMinimal) : left.relation;
+    const leftReverse = savedata.minimalMode ? fixUtf8Mojibake(left.reverseMinimal) : left.reverse;
+    const rightRelation = savedata.minimalMode ? fixUtf8Mojibake(right.relationMinimal) : right.relation;
+    const rightReverse = savedata.minimalMode ? fixUtf8Mojibake(right.reverseMinimal) : right.reverse;
     let a, b, c, ab, bc, abRev, bcRev;
     if (left.end === right.start) {
         a = left.start;

@@ -5,8 +5,7 @@ import {
   formatRange,
   getRank,
   getRankIndex,
-  pointsMagnitude,
-  requiredPremisesForRankIndex
+  pointsMagnitude
 } from "@/rank/ranks";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -41,8 +40,6 @@ export function RankMenu() {
   }, []);
 
   const rank = useMemo(() => getRank(points), [points]);
-  const rankIndex = useMemo(() => getRankIndex(points), [points]);
-  const requiredPremises = useMemo(() => requiredPremisesForRankIndex(rankIndex), [rankIndex]);
 
   function computePos() {
     const el = btnRef.current;
@@ -116,9 +113,7 @@ export function RankMenu() {
                       Your points: <span className="text-slate-100 tabular-nums">{points}</span>
                     </div>
                     <div className="mt-1 text-[11px] text-slate-400">
-                      At your rank, points only change on questions with{" "}
-                      <span className="text-slate-200 font-semibold">{requiredPremises}+</span>{" "}
-                      premises. Base points are ±(2^premises), multiplied by speed (1× at ≥20s, up to 2× at 10s),
+                      Base points are ±(2^premises), multiplied by speed (1× at ≥20s, up to 2× at 10s),
                       and carousel adds ±20%. Total never below 0.
                     </div>
                   </div>

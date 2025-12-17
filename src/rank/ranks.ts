@@ -83,11 +83,11 @@ export function formatRange(r: RankDef): string {
 }
 
 /**
- * Rule: At the nth rank (1-based), you only earn/lose points if the question has (n+1) premises or more.
- * We model ranks as 0-based index -> required premises = index + 2.
+ * Previously required higher premise counts at higher ranks.
+ * Now removed: all questions with 1+ premises qualify for points at any rank.
  */
-export function requiredPremisesForRankIndex(rankIndex: number): number {
-  return Math.max(1, Math.floor(rankIndex) + 2);
+export function requiredPremisesForRankIndex(_rankIndex: number): number {
+  return 1;
 }
 
 export function pointsDeltaFromPremises(premiseCount: number): number {

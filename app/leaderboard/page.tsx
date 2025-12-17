@@ -6,25 +6,23 @@ import { useEffect, useState } from "react";
 
 type Period = "today" | "all";
 type Category = "points" | "minutes" | "gq";
-type League = "bloom" | "focus" | "insight" | "intuition" | "legend";
+type League = "wolf" | "demon" | "dragon" | "god";
 
 const LEAGUES: { id: League; name: string; minRank: number; maxRank: number; color: string }[] = [
-  { id: "bloom", name: "Bloom", minRank: 0, maxRank: 2, color: "#4ade80" },
-  { id: "focus", name: "Focus", minRank: 3, maxRank: 5, color: "#60a5fa" },
-  { id: "insight", name: "Insight", minRank: 6, maxRank: 8, color: "#c084fc" },
-  { id: "intuition", name: "Intuition", minRank: 9, maxRank: 11, color: "#fbbf24" },
-  { id: "legend", name: "Legend", minRank: 12, maxRank: 14, color: "#fb7185" },
+  { id: "wolf", name: "Wolf", minRank: 0, maxRank: 2, color: "#64748b" },
+  { id: "demon", name: "Demon", minRank: 3, maxRank: 5, color: "#f87171" },
+  { id: "dragon", name: "Dragon", minRank: 6, maxRank: 8, color: "#fbbf24" },
+  { id: "god", name: "God", minRank: 9, maxRank: 11, color: "#a78bfa" },
 ];
 
 function getLeagueFromPoints(points: number): League {
   // Determine which league based on total points
   const rankIdx = RANKS.findIndex((r) => points >= r.min && (r.max == null || points < r.max));
-  if (rankIdx < 0) return "bloom";
-  if (rankIdx <= 2) return "bloom";
-  if (rankIdx <= 5) return "focus";
-  if (rankIdx <= 8) return "insight";
-  if (rankIdx <= 11) return "intuition";
-  return "legend";
+  if (rankIdx < 0) return "wolf";
+  if (rankIdx <= 2) return "wolf";
+  if (rankIdx <= 5) return "demon";
+  if (rankIdx <= 8) return "dragon";
+  return "god";
 }
 
 type Entry = {
@@ -73,7 +71,7 @@ const TOP_N = 50;
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("today");
   const [category, setCategory] = useState<Category>("points");
-  const [league, setLeague] = useState<League>("bloom");
+  const [league, setLeague] = useState<League>("wolf");
 
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [gqRows, setGqRows] = useState<GqRow[] | null>(null);

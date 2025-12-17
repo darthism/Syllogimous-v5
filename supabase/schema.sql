@@ -144,6 +144,11 @@ on public.leaderboard_points for update
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
+drop policy if exists "leaderboard_points_owner_delete" on public.leaderboard_points;
+create policy "leaderboard_points_owner_delete"
+on public.leaderboard_points for delete
+using (auth.uid() = user_id);
+
 alter table public.leaderboard_minutes enable row level security;
 
 drop policy if exists "leaderboard_minutes_read_all" on public.leaderboard_minutes;
@@ -184,6 +189,119 @@ drop trigger if exists trg_bump_leaderboard_minutes on public.rrt_history;
 create trigger trg_bump_leaderboard_minutes
 after insert on public.rrt_history
 for each row execute function public.bump_leaderboard_minutes();
+
+-- 2D) Daily minutes leaderboard (public read, auto-updated from rrt_history inserts)
+create table if not exists public.leaderboard_minutes_daily (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  day date not null,
+  display_name text,
+  avatar_path text,
+  total_ms bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, day)
+);
+
+-- Ensure columns exist even if table already existed before this migration.
+alter table public.leaderboard_minutes_daily
+  add column if not exists avatar_path text;
+
+create index if not exists leaderboard_minutes_daily_day_total_desc
+on public.leaderboard_minutes_daily (day, total_ms desc);
+
+alter table public.leaderboard_minutes_daily enable row level security;
+
+drop policy if exists "leaderboard_minutes_daily_read_all" on public.leaderboard_minutes_daily;
+create policy "leaderboard_minutes_daily_read_all"
+on public.leaderboard_minutes_daily for select
+using (true);
+
+drop policy if exists "leaderboard_minutes_daily_owner_write" on public.leaderboard_minutes_daily;
+create policy "leaderboard_minutes_daily_owner_write"
+on public.leaderboard_minutes_daily for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "leaderboard_minutes_daily_owner_update" on public.leaderboard_minutes_daily;
+create policy "leaderboard_minutes_daily_owner_update"
+on public.leaderboard_minutes_daily for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+-- Trigger to bump daily totals on each inserted history row (UTC day).
+create or replace function public.bump_leaderboard_minutes_daily()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  day_utc date;
+begin
+  perform set_config('row_security', 'off', true);
+  day_utc := (timezone('utc', to_timestamp(new.timestamp / 1000.0)))::date;
+  insert into public.leaderboard_minutes_daily (user_id, day, total_ms, updated_at)
+  values (new.user_id, day_utc, coalesce(new.time_elapsed_ms, 0), now())
+  on conflict (user_id, day) do update
+    set total_ms = public.leaderboard_minutes_daily.total_ms + coalesce(new.time_elapsed_ms, 0),
+        updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_bump_leaderboard_minutes_daily on public.rrt_history;
+create trigger trg_bump_leaderboard_minutes_daily
+after insert on public.rrt_history
+for each row execute function public.bump_leaderboard_minutes_daily();
+
+-- 2E) Daily points leaderboard (public read, owner upsert)
+create table if not exists public.leaderboard_points_daily (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  day date not null,
+  display_name text not null,
+  avatar_path text,
+  start_points bigint not null default 0,
+  end_points bigint not null default 0,
+  delta_points bigint not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, day)
+);
+
+alter table public.leaderboard_points_daily
+  add column if not exists avatar_path text;
+
+alter table public.leaderboard_points_daily
+  add column if not exists start_points bigint not null default 0;
+
+alter table public.leaderboard_points_daily
+  add column if not exists end_points bigint not null default 0;
+
+alter table public.leaderboard_points_daily
+  add column if not exists delta_points bigint not null default 0;
+
+create index if not exists leaderboard_points_daily_day_delta_desc
+on public.leaderboard_points_daily (day, delta_points desc);
+
+alter table public.leaderboard_points_daily enable row level security;
+
+drop policy if exists "leaderboard_points_daily_read_all" on public.leaderboard_points_daily;
+create policy "leaderboard_points_daily_read_all"
+on public.leaderboard_points_daily for select
+using (true);
+
+drop policy if exists "leaderboard_points_daily_owner_write" on public.leaderboard_points_daily;
+create policy "leaderboard_points_daily_owner_write"
+on public.leaderboard_points_daily for insert
+with check (auth.uid() = user_id);
+
+drop policy if exists "leaderboard_points_daily_owner_update" on public.leaderboard_points_daily;
+create policy "leaderboard_points_daily_owner_update"
+on public.leaderboard_points_daily for update
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+drop policy if exists "leaderboard_points_daily_owner_delete" on public.leaderboard_points_daily;
+create policy "leaderboard_points_daily_owner_delete"
+on public.leaderboard_points_daily for delete
+using (auth.uid() = user_id);
 
 -- 3) Storage bucket + RLS for per-user image storage
 insert into storage.buckets (id, name, public)

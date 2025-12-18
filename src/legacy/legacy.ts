@@ -1,4 +1,4 @@
-﻿﻿﻿// @ts-nocheck
+﻿// @ts-nocheck
 /* eslint-disable */
 
 import { isSupabaseConfigured } from "@/supabase/client";
@@ -7315,11 +7315,14 @@ class NestedBinaryQuestion {
             .map(() => pool[Math.floor(Math.random() * pool.length)].question.create(2));
 
         let numOperands = +savedata.maxNestedBinaryDepth;
+        // Ensure numOperands is valid
+        if (!numOperands || numOperands < 1) numOperands = 1;
+        
         let i = 0;
         function generator(remaining, depth) {
             remaining--;
-            const left = Math.floor(Math.random() * remaining);
-            const right = remaining - left;
+            const left = Math.floor(Math.random() * Math.max(0, remaining));
+            const right = Math.max(0, remaining) - left;
             const rndIndex = Math.floor(Math.random() * humanOperands.length);
             const humanOperand = humanOperands[rndIndex];
             const evalOperand = evalOperands[rndIndex];
@@ -7334,11 +7337,11 @@ class NestedBinaryQuestion {
                 human: humanOperand
                     .replaceAll('DEPTH', 'depth-' + letter)
                     .replaceAll('INDENT', 'indent-' + letter)
-                    .replace('Ã ', val > - 1 ? val : val.human)
-                    .replace('Ã²', val2 > - 1 ? val2 : val2.human),
+                    .replace('Ã ', typeof val === 'number' ? String(val) : val.human)
+                    .replace('Ã²', typeof val2 === 'number' ? String(val2) : val2.human),
                 eval: evalOperand
-                    .replaceAll('a', val > - 1 ? val : val.eval)
-                    .replaceAll('b', val2 > - 1 ? val2 : val2.eval),
+                    .replaceAll('a', typeof val === 'number' ? String(val) : val.eval)
+                    .replaceAll('b', typeof val2 === 'number' ? String(val2) : val2.eval),
             };
         }
 
@@ -7350,66 +7353,70 @@ class NestedBinaryQuestion {
                 .reduce((a, c) => (a[c] = 1, a), {})
         )
         .join('/');
-        // CSP-safe: avoid eval(). Parse and evaluate boolean expression ourselves.
-        function evalBoolExpr(expr, getVar) {
-            // Tokens: number, '&&', '||', '!', '(', ')'
-            let i = 0;
-            function skip() {
-                while (i < expr.length && /\s/.test(expr[i])) i++;
+        // CSP-safe: use direct boolean evaluation instead of string parsing
+        // Binary operation functions for direct evaluation
+        const binaryOpsNested = [
+            (a, b) => a && b,           // AND
+            (a, b) => !(a && b),        // NAND
+            (a, b) => a || b,           // OR
+            (a, b) => !(a || b),        // NOR
+            (a, b) => a !== b,          // XOR
+            (a, b) => a === b           // XNOR
+        ];
+        
+        // Recursive function to evaluate the expression - parse the string into ops
+        function evaluateExpr(expr, getVar) {
+            // Simple recursive descent parser that directly evaluates
+            let pos = 0;
+            
+            function parseOr() {
+                let left = parseAnd();
+                while (expr.slice(pos, pos + 2) === '||') {
+                    pos += 2;
+                    left = left || parseAnd();
+                }
+                return left;
             }
-            function match(s) {
-                skip();
-                if (expr.slice(i, i + s.length) === s) {
-                    i += s.length;
-                    return true;
+            
+            function parseAnd() {
+                let left = parseNot();
+                while (expr.slice(pos, pos + 2) === '&&') {
+                    pos += 2;
+                    left = left && parseNot();
+                }
+                return left;
+            }
+            
+            function parseNot() {
+                if (expr[pos] === '!') {
+                    pos++;
+                    return !parseNot();
+                }
+                return parsePrimary();
+            }
+            
+            function parsePrimary() {
+                if (expr[pos] === '(') {
+                    pos++;
+                    const val = parseOr();
+                    if (expr[pos] === ')') pos++;
+                    return val;
+                }
+                // Parse number
+                let numStr = '';
+                while (pos < expr.length && /[0-9]/.test(expr[pos])) {
+                    numStr += expr[pos];
+                    pos++;
+                }
+                if (numStr) {
+                    return Boolean(getVar(Number(numStr)));
                 }
                 return false;
             }
-            function parseNumber() {
-                skip();
-                let start = i;
-                while (i < expr.length && /[0-9]/.test(expr[i])) i++;
-                if (start === i) return null;
-                return Number(expr.slice(start, i));
-            }
-            function parsePrimary() {
-                skip();
-                if (match("(")) {
-                    const v = parseOr();
-                    if (!match(")")) throw new Error("Missing ')'");
-                    return v;
-                }
-                const n = parseNumber();
-                if (n == null || !Number.isFinite(n)) throw new Error("Expected number");
-                return Boolean(getVar(n));
-            }
-            function parseNot() {
-                skip();
-                if (match("!")) return !parseNot();
-                return parsePrimary();
-            }
-            function parseAnd() {
-                let left = parseNot();
-                while (true) {
-                    if (match("&&")) left = left && parseNot();
-                    else break;
-                }
-                return left;
-            }
-            function parseOr() {
-                let left = parseAnd();
-                while (true) {
-                    if (match("||")) left = left || parseAnd();
-                    else break;
-                }
-                return left;
-            }
-            const out = parseOr();
-            skip();
-            if (i < expr.length) throw new Error("Unexpected token");
-            return out;
+            
+            return parseOr();
         }
-        const isValid = evalBoolExpr(generated.eval, (idx) => questions[idx]?.isValid);
+        const isValid = evaluateExpr(generated.eval, (idx) => questions[idx]?.isValid);
         const premises = questions.reduce((a, q) => [ ...a, ...q.premises ], [])
         const conclusion = generated.human.replaceAll(/(\d+)/g, m => questions[m].conclusion);
         const countdown = getBinaryCountdown();

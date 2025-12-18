@@ -135,8 +135,8 @@ export function pointsMagnitude({
   const carousel = carouselEnabled ? 1.2 : 1.0;
   const raw = base * speed * carousel;
   // Keep integer points; round to nearest.
-  // Clamp to keep within signed 32-bit-ish magnitude even if multiplied.
-  return Math.max(1, Math.min(2_000_000_000, Math.round(raw)));
+  // Cap max point gain/loss at 1000.
+  return Math.max(1, Math.min(1000, Math.round(raw)));
 }
 
 

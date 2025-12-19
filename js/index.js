@@ -637,13 +637,12 @@ function fastFeedback(cb, className) {
     }
     removeFastFeedback();
     gameArea.classList.add(className);
-    setTimeout(() => {
-        cb();
-        processingAnswer = false;
-        fastFeedbackTimer = setTimeout(() => {
-            removeFastFeedback();
-        }, 1000);
-    }, 350);
+    // Instant transition to next question
+    cb();
+    processingAnswer = false;
+    fastFeedbackTimer = setTimeout(() => {
+        removeFastFeedback();
+    }, 1000);
 }
 
 function wowFeedbackRight(cb) {
@@ -652,10 +651,11 @@ function wowFeedbackRight(cb) {
         fastFeedback(cb, 'right');
     } else {
         feedbackRight.classList.add("active");
+        // Instant transition to next question
+        cb();
+        processingAnswer = false;
         setTimeout(() => {
             feedbackRight.classList.remove("active");
-            cb();
-            processingAnswer = false;
         }, 1000);
     }
 }
@@ -666,10 +666,11 @@ function wowFeedbackWrong(cb) {
         fastFeedback(cb, 'wrong');
     } else {
         feedbackWrong.classList.add("active");
+        // Instant transition to next question
+        cb();
+        processingAnswer = false;
         setTimeout(() => {
             feedbackWrong.classList.remove("active");
-            cb();
-            processingAnswer = false;
         }, 1000);
     }
 }
@@ -680,10 +681,11 @@ function wowFeedbackMissed(cb) {
         fastFeedback(cb, 'missed');
     } else {
         feedbackMissed.classList.add("active");
+        // Instant transition to next question
+        cb();
+        processingAnswer = false;
         setTimeout(() => {
             feedbackMissed.classList.remove("active");
-            cb();
-            processingAnswer = false;
         }, 1000);
     }
 }

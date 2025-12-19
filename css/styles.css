@@ -234,7 +234,6 @@ button.delete:hover {
     height: 100%;
     z-index: 2000;
     position: fixed;
-    transition: all 0.5s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -258,7 +257,6 @@ button.delete:hover {
     width: 100vw;
     top: 0;
     left: 0;
-    transition: all 0.5s ease;
     transform: scaleY(0);
 }
 
@@ -554,7 +552,6 @@ input[type="number"]::-moz-inner-spin-button {
     flex-direction: column;
     border-radius: 0 0 20px 20px;
     max-width: 750px;
-    transition: box-shadow 0.3s ease-in-out;
     position: relative;
     box-sizing: content-box;
 }
@@ -622,7 +619,6 @@ input[type="number"]::-moz-inner-spin-button {
     gap: 1rem;
     justify-content: center;
     margin: 0.5rem 0;
-    transition: all 0.3s ease-out;
 }
 
 .confirmation-true,

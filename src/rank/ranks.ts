@@ -20,7 +20,13 @@ const RANK_NAMES = [
   "Dragon III",
   "God I",
   "God II",
-  "God III"
+  "God III",
+  "Cosmic I",
+  "Cosmic II",
+  "Cosmic III",
+  "Eternal I",
+  "Eternal II",
+  "Eternal III"
 ] as const;
 
 const RANK_COLORS = [
@@ -32,14 +38,22 @@ const RANK_COLORS = [
   "#fca5a5", // red-300
   "#f87171", // red-400
   "#ef4444", // red-500
-  // Dragon League (amber/gold tones)
-  "#fcd34d", // amber-300
-  "#fbbf24", // amber-400
-  "#f59e0b", // amber-500
+  // Dragon League (orange tones)
+  "#fdba74", // orange-300
+  "#fb923c", // orange-400
+  "#f97316", // orange-500
   // God League (violet/divine tones)
   "#c4b5fd", // violet-300
   "#a78bfa", // violet-400
-  "#8b5cf6"  // violet-500
+  "#8b5cf6", // violet-500
+  // Cosmic League (cyan/teal tones)
+  "#67e8f9", // cyan-300
+  "#22d3ee", // cyan-400
+  "#06b6d4", // cyan-500
+  // Eternal League (amber/gold tones)
+  "#fcd34d", // amber-300
+  "#fbbf24", // amber-400
+  "#f59e0b"  // amber-500
 ] as const;
 
 // Rank ranges double in size:

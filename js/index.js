@@ -631,63 +631,30 @@ function removeFastFeedback() {
 
 let fastFeedbackTimer = null;
 function fastFeedback(cb, className) {
-    if (fastFeedbackTimer) {
-        clearTimeout(fastFeedbackTimer);
-        fastFeedbackTimer = null;
-    }
-    removeFastFeedback();
-    gameArea.classList.add(className);
-    // Instant transition to next question
+    // Instant transition - no visual feedback
     cb();
     processingAnswer = false;
-    fastFeedbackTimer = setTimeout(() => {
-        removeFastFeedback();
-    }, 1000);
 }
 
 function wowFeedbackRight(cb) {
     playSound('success');
-    if (appState.fastUi) {
-        fastFeedback(cb, 'right');
-    } else {
-        feedbackRight.classList.add("active");
-        // Instant transition to next question
-        cb();
-        processingAnswer = false;
-        setTimeout(() => {
-            feedbackRight.classList.remove("active");
-        }, 1000);
-    }
+    // Instant transition - no visual feedback
+    cb();
+    processingAnswer = false;
 }
 
 function wowFeedbackWrong(cb) {
     playSound('failure');
-    if (appState.fastUi) {
-        fastFeedback(cb, 'wrong');
-    } else {
-        feedbackWrong.classList.add("active");
-        // Instant transition to next question
-        cb();
-        processingAnswer = false;
-        setTimeout(() => {
-            feedbackWrong.classList.remove("active");
-        }, 1000);
-    }
+    // Instant transition - no visual feedback
+    cb();
+    processingAnswer = false;
 }
 
 function wowFeedbackMissed(cb) {
     playSound('missed');
-    if (appState.fastUi) {
-        fastFeedback(cb, 'missed');
-    } else {
-        feedbackMissed.classList.add("active");
-        // Instant transition to next question
-        cb();
-        processingAnswer = false;
-        setTimeout(() => {
-            feedbackMissed.classList.remove("active");
-        }, 1000);
-    }
+    // Instant transition - no visual feedback
+    cb();
+    processingAnswer = false;
 }
 
 function wowFeedback() {

@@ -135,8 +135,8 @@ export function pointsMagnitude({
   const carousel = carouselEnabled ? 1.2 : 1.0;
   const raw = base * speed * carousel;
   // Keep integer points; round to nearest.
-  // Cap max point gain/loss at 850.
-  return Math.max(1, Math.min(850, Math.round(raw)));
+  // Cap max point gain/loss at 2050.
+  return Math.max(1, Math.min(2050, Math.round(raw)));
 }
 
 

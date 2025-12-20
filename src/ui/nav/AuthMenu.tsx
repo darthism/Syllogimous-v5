@@ -54,7 +54,13 @@ export function AuthMenu() {
     }
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
+        });
         if (error) throw error;
         setStatus("Check your email to confirm your account (if required).");
       } else {

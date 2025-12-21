@@ -6,23 +6,34 @@ import { useEffect, useState } from "react";
 
 type Period = "today" | "all";
 type Category = "points" | "minutes" | "gq";
-type League = "wolf" | "demon" | "dragon" | "god";
+type League = "instinct" | "awareness" | "reason" | "intellect" | "logic" | "insight" | "genius" | "mastermind" | "paragon" | "oracle" | "transcendent" | "celestial" | "cosmic" | "primordial" | "absolute";
 
 const LEAGUES: { id: League; name: string; minRank: number; maxRank: number; color: string }[] = [
-  { id: "wolf", name: "Wolf", minRank: 0, maxRank: 2, color: "#64748b" },
-  { id: "demon", name: "Demon", minRank: 3, maxRank: 5, color: "#f87171" },
-  { id: "dragon", name: "Dragon", minRank: 6, maxRank: 8, color: "#fbbf24" },
-  { id: "god", name: "God", minRank: 9, maxRank: 11, color: "#a78bfa" },
+  { id: "instinct", name: "Instinct", minRank: 0, maxRank: 2, color: "#64748b" },
+  { id: "awareness", name: "Awareness", minRank: 3, maxRank: 5, color: "#78716c" },
+  { id: "reason", name: "Reason", minRank: 6, maxRank: 8, color: "#60a5fa" },
+  { id: "intellect", name: "Intellect", minRank: 9, maxRank: 11, color: "#38bdf8" },
+  { id: "logic", name: "Logic", minRank: 12, maxRank: 14, color: "#22d3ee" },
+  { id: "insight", name: "Insight", minRank: 15, maxRank: 17, color: "#2dd4bf" },
+  { id: "genius", name: "Genius", minRank: 18, maxRank: 20, color: "#34d399" },
+  { id: "mastermind", name: "Mastermind", minRank: 21, maxRank: 23, color: "#4ade80" },
+  { id: "paragon", name: "Paragon", minRank: 24, maxRank: 26, color: "#a3e635" },
+  { id: "oracle", name: "Oracle", minRank: 27, maxRank: 29, color: "#facc15" },
+  { id: "transcendent", name: "Transcendent", minRank: 30, maxRank: 32, color: "#fbbf24" },
+  { id: "celestial", name: "Celestial", minRank: 33, maxRank: 35, color: "#fb923c" },
+  { id: "cosmic", name: "Cosmic", minRank: 36, maxRank: 38, color: "#fb7185" },
+  { id: "primordial", name: "Primordial", minRank: 39, maxRank: 41, color: "#c084fc" },
+  { id: "absolute", name: "Absolute", minRank: 42, maxRank: 44, color: "#e879f9" },
 ];
 
 function getLeagueFromPoints(points: number): League {
   // Determine which league based on total points
   const rankIdx = RANKS.findIndex((r) => points >= r.min && (r.max == null || points < r.max));
-  if (rankIdx < 0) return "wolf";
-  if (rankIdx <= 2) return "wolf";
-  if (rankIdx <= 5) return "demon";
-  if (rankIdx <= 8) return "dragon";
-  return "god";
+  if (rankIdx < 0) return "instinct";
+  // Each league has 3 ranks
+  const leagueIdx = Math.floor(rankIdx / 3);
+  if (leagueIdx >= LEAGUES.length) return "absolute";
+  return LEAGUES[leagueIdx].id;
 }
 
 type Entry = {
@@ -71,7 +82,7 @@ const TOP_N = 50;
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("today");
   const [category, setCategory] = useState<Category>("points");
-  const [league, setLeague] = useState<League>("wolf");
+  const [league, setLeague] = useState<League>("instinct");
 
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [gqRows, setGqRows] = useState<GqRow[] | null>(null);

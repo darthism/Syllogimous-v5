@@ -104,23 +104,19 @@ const RANK_COLORS = [
   "#f0abfc", "#e879f9", "#d946ef"
 ] as const;
 
-// Rank ranges double in size:
-// Adept: 0-250 (width 250)
-// Scholar: 250-750 (width 500)
-// Savant: 750-1750 (width 1000)
-// ...
-const BASE_RANGE = 250;
+// Linear rank scaling from 0 to 1,000,000 points
+// Each rank spans approximately 22,222 points (1,000,000 / 45 ranks)
+const MAX_POINTS = 1_000_000;
+const POINTS_PER_RANK = Math.floor(MAX_POINTS / RANK_NAMES.length);
 export const RANKS: RankDef[] = (() => {
   const out: RankDef[] = [];
-  let min = 0;
   for (let i = 0; i < RANK_NAMES.length; i++) {
     const name = RANK_NAMES[i];
     const color = RANK_COLORS[i];
     const isLast = i === RANK_NAMES.length - 1;
-    const width = BASE_RANGE * 2 ** i;
-    const max = isLast ? null : min + width;
+    const min = i * POINTS_PER_RANK;
+    const max = isLast ? null : (i + 1) * POINTS_PER_RANK;
     out.push({ name, min, max, color });
-    if (max != null) min = max;
   }
   return out;
 })();

@@ -104,18 +104,29 @@ const RANK_COLORS = [
   "#f0abfc", "#e879f9", "#d946ef"
 ] as const;
 
-// Linear rank scaling from 0 to 1,000,000 points
-// Each rank spans approximately 22,222 points (1,000,000 / 45 ranks)
+// Exponential rank scaling from 0 to 1,000,000 points
+// Early ranks are easier to progress through, later ranks require much more points
 const MAX_POINTS = 1_000_000;
-const POINTS_PER_RANK = Math.floor(MAX_POINTS / RANK_NAMES.length);
+const NUM_RANKS = RANK_NAMES.length; // 45 ranks
+// Using exponential formula: points(i) = MAX_POINTS * (e^(k*i) - 1) / (e^(k*(n-1)) - 1)
+// where k controls the steepness of the curve
+const EXPONENTIAL_FACTOR = 0.12; // Tuned for a smooth exponential curve
+
+function getExponentialPoints(rankIndex: number): number {
+  if (rankIndex === 0) return 0;
+  const maxExp = Math.exp(EXPONENTIAL_FACTOR * (NUM_RANKS - 1)) - 1;
+  const currentExp = Math.exp(EXPONENTIAL_FACTOR * rankIndex) - 1;
+  return Math.round(MAX_POINTS * currentExp / maxExp);
+}
+
 export const RANKS: RankDef[] = (() => {
   const out: RankDef[] = [];
-  for (let i = 0; i < RANK_NAMES.length; i++) {
+  for (let i = 0; i < NUM_RANKS; i++) {
     const name = RANK_NAMES[i];
     const color = RANK_COLORS[i];
-    const isLast = i === RANK_NAMES.length - 1;
-    const min = i * POINTS_PER_RANK;
-    const max = isLast ? null : (i + 1) * POINTS_PER_RANK;
+    const isLast = i === NUM_RANKS - 1;
+    const min = getExponentialPoints(i);
+    const max = isLast ? null : getExponentialPoints(i + 1);
     out.push({ name, min, max, color });
   }
   return out;

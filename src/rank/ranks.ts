@@ -9,51 +9,99 @@ export type RankDef = {
 };
 
 const RANK_NAMES = [
-  "Wolf I",
-  "Wolf II",
-  "Wolf III",
-  "Demon I",
-  "Demon II",
-  "Demon III",
-  "Dragon I",
-  "Dragon II",
-  "Dragon III",
-  "God I",
-  "God II",
-  "God III",
+  // 1. Instinct
+  "Instinct I",
+  "Instinct II",
+  "Instinct III",
+  // 2. Awareness
+  "Awareness I",
+  "Awareness II",
+  "Awareness III",
+  // 3. Reason
+  "Reason I",
+  "Reason II",
+  "Reason III",
+  // 4. Intellect
+  "Intellect I",
+  "Intellect II",
+  "Intellect III",
+  // 5. Logic
+  "Logic I",
+  "Logic II",
+  "Logic III",
+  // 6. Insight
+  "Insight I",
+  "Insight II",
+  "Insight III",
+  // 7. Genius
+  "Genius I",
+  "Genius II",
+  "Genius III",
+  // 8. Mastermind
+  "Mastermind I",
+  "Mastermind II",
+  "Mastermind III",
+  // 9. Paragon
+  "Paragon I",
+  "Paragon II",
+  "Paragon III",
+  // 10. Oracle
+  "Oracle I",
+  "Oracle II",
+  "Oracle III",
+  // 11. Transcendent
+  "Transcendent I",
+  "Transcendent II",
+  "Transcendent III",
+  // 12. Celestial
+  "Celestial I",
+  "Celestial II",
+  "Celestial III",
+  // 13. Cosmic
   "Cosmic I",
   "Cosmic II",
   "Cosmic III",
-  "Eternal I",
-  "Eternal II",
-  "Eternal III"
+  // 14. Primordial
+  "Primordial I",
+  "Primordial II",
+  "Primordial III",
+  // 15. Absolute
+  "Absolute I",
+  "Absolute II",
+  "Absolute III"
 ] as const;
 
 const RANK_COLORS = [
-  // Wolf League (slate/silver tones)
-  "#94a3b8", // slate-400
-  "#64748b", // slate-500
-  "#475569", // slate-600
-  // Demon League (red/crimson tones)
-  "#fca5a5", // red-300
-  "#f87171", // red-400
-  "#ef4444", // red-500
-  // Dragon League (orange tones)
-  "#fdba74", // orange-300
-  "#fb923c", // orange-400
-  "#f97316", // orange-500
-  // God League (violet/divine tones)
-  "#c4b5fd", // violet-300
-  "#a78bfa", // violet-400
-  "#8b5cf6", // violet-500
-  // Cosmic League (cyan/teal tones)
-  "#67e8f9", // cyan-300
-  "#22d3ee", // cyan-400
-  "#06b6d4", // cyan-500
-  // Eternal League (amber/gold tones)
-  "#fcd34d", // amber-300
-  "#fbbf24", // amber-400
-  "#f59e0b"  // amber-500
+  // 1. Instinct (gray/slate)
+  "#94a3b8", "#64748b", "#475569",
+  // 2. Awareness (stone/warm gray)
+  "#a8a29e", "#78716c", "#57534e",
+  // 3. Reason (blue)
+  "#93c5fd", "#60a5fa", "#3b82f6",
+  // 4. Intellect (sky)
+  "#7dd3fc", "#38bdf8", "#0ea5e9",
+  // 5. Logic (cyan)
+  "#67e8f9", "#22d3ee", "#06b6d4",
+  // 6. Insight (teal)
+  "#5eead4", "#2dd4bf", "#14b8a6",
+  // 7. Genius (emerald)
+  "#6ee7b7", "#34d399", "#10b981",
+  // 8. Mastermind (green)
+  "#86efac", "#4ade80", "#22c55e",
+  // 9. Paragon (lime)
+  "#bef264", "#a3e635", "#84cc16",
+  // 10. Oracle (yellow)
+  "#fde047", "#facc15", "#eab308",
+  // 11. Transcendent (amber)
+  "#fcd34d", "#fbbf24", "#f59e0b",
+  // 12. Celestial (orange)
+  "#fdba74", "#fb923c", "#f97316",
+  // 13. Cosmic (rose)
+  "#fda4af", "#fb7185", "#f43f5e",
+  // 14. Primordial (purple)
+  "#d8b4fe", "#c084fc", "#a855f7",
+  // 15. Absolute (fuchsia/pink)
+  "#f0abfc", "#e879f9", "#d946ef"
 ] as const;
 
 // Rank ranges double in size:

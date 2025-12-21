@@ -54,7 +54,7 @@ export function AuthMenu() {
     }
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -62,7 +62,12 @@ export function AuthMenu() {
           }
         });
         if (error) throw error;
-        setStatus("Check your email to confirm your account (if required).");
+        // Check if user already exists (Supabase returns user with identities: [] for existing emails)
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          setStatus("This email is already registered. Try logging in instead.");
+          return;
+        }
+        setStatus("Check your email to confirm your account.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -70,7 +75,18 @@ export function AuthMenu() {
         setOpen(false);
       }
     } catch (e: any) {
-      setStatus(e?.message ?? "Authentication failed.");
+      console.error("Auth error:", e);
+      const msg = e?.message || "Authentication failed.";
+      // Provide more user-friendly messages for common errors
+      if (msg.includes("Password should be at least")) {
+        setStatus("Password must be at least 6 characters.");
+      } else if (msg.includes("Invalid login credentials")) {
+        setStatus("Invalid email or password.");
+      } else if (msg.includes("Email not confirmed")) {
+        setStatus("Please check your email and confirm your account first.");
+      } else {
+        setStatus(msg);
+      }
     }
   }
 

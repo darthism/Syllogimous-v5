@@ -247,6 +247,12 @@ function renderJunkEmojisText(text) {
         return new VisualNoise().generateVisualNoise(parseInt(seed), parseInt(splits));
     });
 
+    text = text.replaceAll(/\[art\](\d+)\[\/art\]/gi, (match, id) => {
+        // Use Lorem Picsum for random art images, seeded by ID for consistency
+        const imageId = parseInt(id) % 1000; // Picsum has ~1000 images
+        return `<img class="art-stimulus" src="https://picsum.photos/seed/${id}/100/50" alt="Art ${imageId}" loading="eager" crossorigin="anonymous">`;
+    });
+
     text = text.replaceAll(/\[svg\](\d+)\[\/svg\]/gi, (match, id) => {
         return REUSABLE_SVGS[id];
     });

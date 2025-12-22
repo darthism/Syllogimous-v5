@@ -50,6 +50,12 @@ function createVisualNoiseTag() {
     return `[vnoise]${id},${splits}[/vnoise]`;
 }
 
+function createArtTag() {
+    // Generate a unique ID for fetching a random art image
+    const id = Math.floor(Math.random() * 999999);
+    return `[art]${id}[/art]`;
+}
+
 function maxStimuliAllowed() {
     const stimuliConfigs = createStimuliConfigs();
     return stimuliConfigs.reduce((a, b) => Math.min(a, b.limit), 999) - 1;
@@ -85,6 +91,12 @@ function createStimuliConfigs() {
         stimuliConfigs.push({
             limit: 1000,
             generate: () => createVisualNoiseTag(),
+        });
+    };
+    if (savedata.useArt) {
+        stimuliConfigs.push({
+            limit: 1000,
+            generate: () => createArtTag(),
         });
     };
     if (savedata.useGarbageWords) {

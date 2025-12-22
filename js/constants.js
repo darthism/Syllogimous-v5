@@ -78,6 +78,7 @@ let savedata = {
     "overrideAnchorSpaceWeight": 100,
     "useJunkEmoji": false,
     "useVisualNoise": false,
+    "useArt": false,
     "visualNoiseSplits": 5,
     "space2DHardModeLevel": 0,
     "space3DHardModeLevel": 0,
@@ -167,6 +168,7 @@ const compressedSettings = {
     "overrideAnchorSpaceWeight": "ancW",
     "useJunkEmoji": "junk",
     "useVisualNoise": "vnoise",
+    "useArt": "art",
     "visualNoiseSplits": "vsplits",
     "space2DHardModeLevel": "transform2D",
     "space3DHardModeLevel": "transform3D",
@@ -284,6 +286,7 @@ const keySettingMap = {
     "p-67": "autoProgressionChange",
     "p-68": "autoProgressionTimeDrop",
     "p-69": "autoProgressionTimeBump",
+    "p-70": "useArt",
 };
 
 const legacySettings = [

@@ -119,6 +119,7 @@ let savedata = {
     "overrideAnchorSpaceWeight": 100,
     "useJunkEmoji": false,
     "useVisualNoise": false,
+    "useArt": false,
     "visualNoiseSplits": 5,
     "space2DHardModeLevel": 0,
     "space3DHardModeLevel": 0,
@@ -210,6 +211,7 @@ const compressedSettings = {
     "overrideAnchorSpaceWeight": "ancW",
     "useJunkEmoji": "junk",
     "useVisualNoise": "vnoise",
+    "useArt": "art",
     "visualNoiseSplits": "vsplits",
     "space2DHardModeLevel": "transform2D",
     "space3DHardModeLevel": "transform3D",
@@ -331,6 +333,7 @@ const keySettingMap = {
     "p-67": "autoProgressionChange",
     "p-68": "autoProgressionTimeDrop",
     "p-69": "autoProgressionTimeBump",
+    "p-70": "useArt",
 };
 
 const legacySettings = [
@@ -5176,6 +5179,12 @@ function renderJunkEmojisText(text) {
         return new VisualNoise().generateVisualNoise(parseInt(seed), parseInt(splits));
     });
 
+    text = text.replaceAll(/\[art\](\d+)\[\/art\]/gi, (match, id) => {
+        // Use Lorem Picsum for random art images, seeded by ID for consistency
+        const imageId = parseInt(id) % 1000; // Picsum has ~1000 images
+        return `<img class="art-stimulus" src="https://picsum.photos/seed/${id}/100/50" alt="Art ${imageId}" loading="eager" crossorigin="anonymous">`;
+    });
+
     text = text.replaceAll(/\[svg\](\d+)\[\/svg\]/gi, (match, id) => {
         return REUSABLE_SVGS[id];
     });
@@ -7607,6 +7616,12 @@ function createVisualNoiseTag() {
     return `[vnoise]${id},${splits}[/vnoise]`;
 }
 
+function createArtTag() {
+    // Generate a unique ID for fetching a random art image
+    const id = Math.floor(Math.random() * 999999);
+    return `[art]${id}[/art]`;
+}
+
 function maxStimuliAllowed() {
     const stimuliConfigs = createStimuliConfigs();
     return stimuliConfigs.reduce((a, b) => Math.min(a, b.limit), 999) - 1;
@@ -7642,6 +7657,12 @@ function createStimuliConfigs() {
         stimuliConfigs.push({
             limit: 1000,
             generate: () => createVisualNoiseTag(),
+        });
+    };
+    if (savedata.useArt) {
+        stimuliConfigs.push({
+            limit: 1000,
+            generate: () => createArtTag(),
         });
     };
     if (savedata.useGarbageWords) {

@@ -5178,7 +5178,7 @@ function generateTopoSvg(seed) {
         return state / (2 ** 31 - 1);
     };
 
-    const width = 100, height = 50;
+    const width = 50, height = 50;
     const layers = 8 + Math.floor(random() * 6); // 8-13 contour layers for more detail
     
     // Generate a color palette based on seed (earth tones, ocean blues, or forest greens)
@@ -5202,7 +5202,7 @@ function generateTopoSvg(seed) {
     const peaks = [];
     for (let p = 0; p < numPeaks; p++) {
         peaks.push({
-            x: 15 + random() * 70,
+            x: 10 + random() * 30,
             y: 10 + random() * 30
         });
     }
@@ -5230,7 +5230,7 @@ function generateTopoSvg(seed) {
             let px = 0, py = 0, totalWeight = 0;
             for (const peak of peaks) {
                 const weight = 1 / (peaks.length);
-                px += (peak.x + Math.cos(angle) * radiusVar * 1.8) * weight;
+                px += (peak.x + Math.cos(angle) * radiusVar) * weight;
                 py += (peak.y + Math.sin(angle) * radiusVar) * weight;
                 totalWeight += weight;
             }
@@ -5278,7 +5278,7 @@ function renderJunkEmojisText(text) {
     text = text.replaceAll(/\[art\](\d+)\[\/art\]/gi, (match, id) => {
         // Use Lorem Picsum for random art images, seeded by ID for consistency
         const imageId = parseInt(id) % 1000; // Picsum has ~1000 images
-        return `<img class="art-stimulus" src="https://picsum.photos/seed/${id}/100/50" alt="Art ${imageId}" loading="eager" crossorigin="anonymous">`;
+        return `<img class="art-stimulus" src="https://picsum.photos/seed/${id}/50/50" alt="Art ${imageId}" loading="eager" crossorigin="anonymous">`;
     });
 
     text = text.replaceAll(/\[topo\](\d+)\[\/topo\]/gi, (match, id) => {

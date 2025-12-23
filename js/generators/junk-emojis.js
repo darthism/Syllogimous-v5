@@ -244,27 +244,33 @@ function generateTopoSvg(seed) {
     };
 
     const width = 100, height = 50;
-    const layers = 4 + Math.floor(random() * 4); // 4-7 contour layers
+    const layers = 8 + Math.floor(random() * 6); // 8-13 contour layers for more detail
     
     // Generate a color palette based on seed (earth tones, ocean blues, or forest greens)
     const palettes = [
         // Earth/terrain
-        ['#2d5016', '#4a7c23', '#7cb342', '#aed581', '#dcedc8', '#f1f8e9', '#fff8e1', '#ffe0b2'],
+        ['#2d5016', '#3d6b1c', '#4a7c23', '#5d9a2a', '#7cb342', '#95c45a', '#aed581', '#c5e1a5', '#dcedc8', '#e8f5e9', '#fff8e1', '#ffe0b2'],
         // Ocean depth  
-        ['#0d47a1', '#1565c0', '#1976d2', '#2196f3', '#64b5f6', '#90caf9', '#bbdefb', '#e3f2fd'],
+        ['#0a3d91', '#0d47a1', '#1256b0', '#1565c0', '#1873c9', '#1976d2', '#2196f3', '#42a5f5', '#64b5f6', '#90caf9', '#bbdefb', '#e3f2fd'],
         // Desert/canyon
-        ['#3e2723', '#5d4037', '#795548', '#a1887f', '#d7ccc8', '#efebe9', '#fff3e0', '#ffe0b2'],
+        ['#2e1f1a', '#3e2723', '#4e342e', '#5d4037', '#6d4c41', '#795548', '#8d6e63', '#a1887f', '#bcaaa4', '#d7ccc8', '#efebe9', '#fff3e0'],
         // Forest
-        ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9', '#e8f5e9'],
+        ['#0d3d0f', '#1b5e20', '#257a28', '#2e7d32', '#338536', '#388e3c', '#43a047', '#4caf50', '#66bb6a', '#81c784', '#a5d6a7', '#c8e6c9'],
         // Volcanic
-        ['#b71c1c', '#c62828', '#d32f2f', '#e53935', '#ef5350', '#ffcdd2', '#424242', '#212121'],
+        ['#7f0000', '#9a0007', '#b71c1c', '#c62828', '#d32f2f', '#e53935', '#ef5350', '#e57373', '#ef9a9a', '#ffcdd2', '#616161', '#9e9e9e'],
     ];
     
     const palette = palettes[Math.floor(random() * palettes.length)];
     
-    // Generate contour center points
-    const cx = 20 + random() * 60;
-    const cy = 10 + random() * 30;
+    // Generate contour center points - can have multiple peaks
+    const numPeaks = 1 + Math.floor(random() * 2); // 1-2 peaks
+    const peaks = [];
+    for (let p = 0; p < numPeaks; p++) {
+        peaks.push({
+            x: 15 + random() * 70,
+            y: 10 + random() * 30
+        });
+    }
     
     let svg = `<svg class="topo-stimulus" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
     
@@ -273,32 +279,49 @@ function generateTopoSvg(seed) {
     
     // Draw contour layers from largest to smallest
     for (let i = 0; i < layers; i++) {
-        const colorIdx = Math.min(i, palette.length - 1);
-        const baseRadius = (layers - i) * (Math.min(width, height) / (layers + 1));
+        const colorIdx = Math.min(Math.floor(i * palette.length / layers), palette.length - 1);
+        const baseRadius = (layers - i) * (Math.min(width, height) / (layers + 2));
         
-        // Create irregular contour path
+        // Create irregular contour path with more segments for detail
         const points = [];
-        const segments = 12 + Math.floor(random() * 8);
+        const segments = 18 + Math.floor(random() * 12); // More segments for smoother, detailed contours
+        
         for (let j = 0; j < segments; j++) {
             const angle = (j / segments) * Math.PI * 2;
-            const radiusVar = baseRadius * (0.6 + random() * 0.8);
-            const px = cx + Math.cos(angle) * radiusVar * 1.5;
-            const py = cy + Math.sin(angle) * radiusVar;
+            // Add variation based on multiple peaks
+            let radiusVar = baseRadius * (0.5 + random() * 0.6);
+            
+            // Blend influence from all peaks
+            let px = 0, py = 0, totalWeight = 0;
+            for (const peak of peaks) {
+                const weight = 1 / (peaks.length);
+                px += (peak.x + Math.cos(angle) * radiusVar * 1.8) * weight;
+                py += (peak.y + Math.sin(angle) * radiusVar) * weight;
+                totalWeight += weight;
+            }
+            px /= totalWeight / peaks.length;
+            py /= totalWeight / peaks.length;
+            
+            // Add extra noise for more natural look
+            px += (random() - 0.5) * 4;
+            py += (random() - 0.5) * 2;
+            
             points.push({ x: px, y: py });
         }
         
         // Create smooth path through points
-        let path = `M ${points[0].x} ${points[0].y}`;
+        let path = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
         for (let j = 0; j < points.length; j++) {
             const p0 = points[j];
             const p1 = points[(j + 1) % points.length];
             const midX = (p0.x + p1.x) / 2;
             const midY = (p0.y + p1.y) / 2;
-            path += ` Q ${p0.x} ${p0.y} ${midX} ${midY}`;
+            path += ` Q ${p0.x.toFixed(1)} ${p0.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
         }
         path += ' Z';
         
-        svg += `<path d="${path}" fill="${palette[colorIdx]}" opacity="0.9"/>`;
+        // Draw filled area with black contour line
+        svg += `<path d="${path}" fill="${palette[colorIdx]}" stroke="#000000" stroke-width="0.8"/>`;
     }
     
     svg += '</svg>';

@@ -335,8 +335,8 @@ const keySettingMap = {
     "p-67": "autoProgressionChange",
     "p-68": "autoProgressionTimeDrop",
     "p-69": "autoProgressionTimeBump",
-    "p-70": "useArt",
-    "p-71": "useTopo",
+    "p-72": "useArt",
+    "p-73": "useTopo",
 };
 
 const legacySettings = [

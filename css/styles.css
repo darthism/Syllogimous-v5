@@ -1430,18 +1430,22 @@ input[type="checkbox"]:checked + .switch::after {
 .indent-h::before { content: '((((((('; visibility: hidden; }
 .indent-i::before { content: '(((((((('; visibility: hidden; }
 
-svg.junk, svg.noise, svg.anchor, img.art-stimulus {
+svg.junk, svg.noise, svg.anchor, img.art-stimulus, svg.topo-stimulus {
     height: 1.125em;
     width: auto;
     vertical-align: middle;
 }
 
-svg.junk, svg.noise, img.art-stimulus {
+svg.junk, svg.noise, img.art-stimulus, svg.topo-stimulus {
     box-shadow: 0 0 0.02em 0.06em #000;
 }
 
 img.art-stimulus {
     object-fit: cover;
+    border-radius: 2px;
+}
+
+svg.topo-stimulus {
     border-radius: 2px;
 }
 
@@ -2086,7 +2090,7 @@ table.distinction {
         font-size: var(--step-1);
     }
 
-    svg.junk, svg.noise, svg.anchor, img.art-stimulus {
+    svg.junk, svg.noise, svg.anchor, img.art-stimulus, svg.topo-stimulus {
         height: 1.25em;
     }
 }

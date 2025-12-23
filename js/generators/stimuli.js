@@ -56,6 +56,12 @@ function createArtTag() {
     return `[art]${id}[/art]`;
 }
 
+function createTopoTag() {
+    // Generate a unique ID for creating a topographic map pattern
+    const id = Math.floor(Math.random() * 999999);
+    return `[topo]${id}[/topo]`;
+}
+
 function maxStimuliAllowed() {
     const stimuliConfigs = createStimuliConfigs();
     return stimuliConfigs.reduce((a, b) => Math.min(a, b.limit), 999) - 1;
@@ -97,6 +103,12 @@ function createStimuliConfigs() {
         stimuliConfigs.push({
             limit: 1000,
             generate: () => createArtTag(),
+        });
+    };
+    if (savedata.useTopo) {
+        stimuliConfigs.push({
+            limit: 1000,
+            generate: () => createTopoTag(),
         });
     };
     if (savedata.useGarbageWords) {

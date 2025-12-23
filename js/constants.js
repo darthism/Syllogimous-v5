@@ -79,6 +79,7 @@ let savedata = {
     "useJunkEmoji": false,
     "useVisualNoise": false,
     "useArt": false,
+    "useTopo": false,
     "visualNoiseSplits": 5,
     "space2DHardModeLevel": 0,
     "space3DHardModeLevel": 0,
@@ -169,6 +170,7 @@ const compressedSettings = {
     "useJunkEmoji": "junk",
     "useVisualNoise": "vnoise",
     "useArt": "art",
+    "useTopo": "topo",
     "visualNoiseSplits": "vsplits",
     "space2DHardModeLevel": "transform2D",
     "space3DHardModeLevel": "transform3D",
@@ -287,6 +289,7 @@ const keySettingMap = {
     "p-68": "autoProgressionTimeDrop",
     "p-69": "autoProgressionTimeBump",
     "p-70": "useArt",
+    "p-71": "useTopo",
 };
 
 const legacySettings = [

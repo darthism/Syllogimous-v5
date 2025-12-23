@@ -120,6 +120,7 @@ let savedata = {
     "useJunkEmoji": false,
     "useVisualNoise": false,
     "useArt": false,
+    "useTopo": false,
     "visualNoiseSplits": 5,
     "space2DHardModeLevel": 0,
     "space3DHardModeLevel": 0,
@@ -212,6 +213,7 @@ const compressedSettings = {
     "useJunkEmoji": "junk",
     "useVisualNoise": "vnoise",
     "useArt": "art",
+    "useTopo": "topo",
     "visualNoiseSplits": "vsplits",
     "space2DHardModeLevel": "transform2D",
     "space3DHardModeLevel": "transform3D",
@@ -334,6 +336,7 @@ const keySettingMap = {
     "p-68": "autoProgressionTimeDrop",
     "p-69": "autoProgressionTimeBump",
     "p-70": "useArt",
+    "p-71": "useTopo",
 };
 
 const legacySettings = [
@@ -5167,6 +5170,76 @@ function throwSvgsOnPage() {
     document.body.appendChild(container);
 }
 
+function generateTopoSvg(seed) {
+    // Seeded random for consistent output
+    let state = seed % (2 ** 31 - 1);
+    const random = () => {
+        state = (48271 * state) % (2 ** 31 - 1);
+        return state / (2 ** 31 - 1);
+    };
+
+    const width = 100, height = 50;
+    const layers = 4 + Math.floor(random() * 4); // 4-7 contour layers
+    
+    // Generate a color palette based on seed (earth tones, ocean blues, or forest greens)
+    const palettes = [
+        // Earth/terrain
+        ['#2d5016', '#4a7c23', '#7cb342', '#aed581', '#dcedc8', '#f1f8e9', '#fff8e1', '#ffe0b2'],
+        // Ocean depth  
+        ['#0d47a1', '#1565c0', '#1976d2', '#2196f3', '#64b5f6', '#90caf9', '#bbdefb', '#e3f2fd'],
+        // Desert/canyon
+        ['#3e2723', '#5d4037', '#795548', '#a1887f', '#d7ccc8', '#efebe9', '#fff3e0', '#ffe0b2'],
+        // Forest
+        ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50', '#81c784', '#a5d6a7', '#c8e6c9', '#e8f5e9'],
+        // Volcanic
+        ['#b71c1c', '#c62828', '#d32f2f', '#e53935', '#ef5350', '#ffcdd2', '#424242', '#212121'],
+    ];
+    
+    const palette = palettes[Math.floor(random() * palettes.length)];
+    
+    // Generate contour center points
+    const cx = 20 + random() * 60;
+    const cy = 10 + random() * 30;
+    
+    let svg = `<svg class="topo-stimulus" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
+    
+    // Background
+    svg += `<rect width="${width}" height="${height}" fill="${palette[palette.length - 1]}"/>`;
+    
+    // Draw contour layers from largest to smallest
+    for (let i = 0; i < layers; i++) {
+        const colorIdx = Math.min(i, palette.length - 1);
+        const baseRadius = (layers - i) * (Math.min(width, height) / (layers + 1));
+        
+        // Create irregular contour path
+        const points = [];
+        const segments = 12 + Math.floor(random() * 8);
+        for (let j = 0; j < segments; j++) {
+            const angle = (j / segments) * Math.PI * 2;
+            const radiusVar = baseRadius * (0.6 + random() * 0.8);
+            const px = cx + Math.cos(angle) * radiusVar * 1.5;
+            const py = cy + Math.sin(angle) * radiusVar;
+            points.push({ x: px, y: py });
+        }
+        
+        // Create smooth path through points
+        let path = `M ${points[0].x} ${points[0].y}`;
+        for (let j = 0; j < points.length; j++) {
+            const p0 = points[j];
+            const p1 = points[(j + 1) % points.length];
+            const midX = (p0.x + p1.x) / 2;
+            const midY = (p0.y + p1.y) / 2;
+            path += ` Q ${p0.x} ${p0.y} ${midX} ${midY}`;
+        }
+        path += ' Z';
+        
+        svg += `<path d="${path}" fill="${palette[colorIdx]}" opacity="0.9"/>`;
+    }
+    
+    svg += '</svg>';
+    return svg;
+}
+
 function renderJunkEmojisText(text) {
     text = text.replaceAll(/\[junk\](\d+)\[\/junk\]/gi, (match, id) => {
         let s = `<svg class="junk" width="${EMOJI_LENGTH}" height="${EMOJI_LENGTH}">`;
@@ -5183,6 +5256,10 @@ function renderJunkEmojisText(text) {
         // Use Lorem Picsum for random art images, seeded by ID for consistency
         const imageId = parseInt(id) % 1000; // Picsum has ~1000 images
         return `<img class="art-stimulus" src="https://picsum.photos/seed/${id}/100/50" alt="Art ${imageId}" loading="eager" crossorigin="anonymous">`;
+    });
+
+    text = text.replaceAll(/\[topo\](\d+)\[\/topo\]/gi, (match, id) => {
+        return generateTopoSvg(parseInt(id));
     });
 
     text = text.replaceAll(/\[svg\](\d+)\[\/svg\]/gi, (match, id) => {
@@ -7622,6 +7699,12 @@ function createArtTag() {
     return `[art]${id}[/art]`;
 }
 
+function createTopoTag() {
+    // Generate a unique ID for creating a topographic map pattern
+    const id = Math.floor(Math.random() * 999999);
+    return `[topo]${id}[/topo]`;
+}
+
 function maxStimuliAllowed() {
     const stimuliConfigs = createStimuliConfigs();
     return stimuliConfigs.reduce((a, b) => Math.min(a, b.limit), 999) - 1;
@@ -7663,6 +7746,12 @@ function createStimuliConfigs() {
         stimuliConfigs.push({
             limit: 1000,
             generate: () => createArtTag(),
+        });
+    };
+    if (savedata.useTopo) {
+        stimuliConfigs.push({
+            limit: 1000,
+            generate: () => createTopoTag(),
         });
     };
     if (savedata.useGarbageWords) {

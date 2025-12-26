@@ -712,10 +712,22 @@ input[type="number"]::-moz-inner-spin-button {
 
 .display_text.order-aesthetic {
     padding-left: 1.75rem;
+    overflow-x: auto;
+}
+
+.display_text.order-aesthetic .formatted-premise,
+.display_text.order-aesthetic .formatted-conclusion,
+.display_text.order-aesthetic .formatted-operation {
+    white-space: nowrap;
 }
 
 .carousel_display_text.order-aesthetic {
     padding-left: 1.75rem;
+    overflow-x: auto;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise {
+    white-space: nowrap;
 }
 
 .display_text.big-question .formatted-premise {
@@ -1286,6 +1298,11 @@ input[type="checkbox"]:checked + .switch::after {
 
 .hqli.order-aesthetic .inner {
     padding-left: 1.75rem;
+    overflow-x: auto;
+}
+
+.hqli.order-aesthetic .hqli-premise {
+    white-space: nowrap;
 }
 
 .hqli .inner > .hqli-premise:nth-child(even) {

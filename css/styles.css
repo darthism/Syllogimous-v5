@@ -714,6 +714,10 @@ input[type="number"]::-moz-inner-spin-button {
     padding-left: 1.75rem;
 }
 
+.carousel_display_text.order-aesthetic {
+    padding-left: 1.75rem;
+}
+
 .display_text.big-question .formatted-premise {
     margin-bottom: 0.2rem;
 }
@@ -792,46 +796,40 @@ input[type="number"]::-moz-inner-spin-button {
 .formatted-premise,
 .formatted-operation {
     margin-bottom: 0.7rem;
-    position: relative;
 }
 
-.formatted-premise[data-number]::before {
-    content: attr(data-number);
-    position: absolute;
-    left: -1.65rem;
-    width: 1.5rem;
+.formatted-premise .premise-number {
+    display: inline-block;
+    width: 1.65rem;
+    margin-left: -1.65rem;
     text-align: right;
-    display: block;
+    padding-right: 0.25rem;
     color: var(--text-color);
-    opacity: 0.85;
-    font-size: 0.9em;
-    white-space: nowrap;
+    opacity: 0.7;
+    font-size: 0.85em;
     font-family: monospace;
     font-weight: normal;
-    pointer-events: none;
-    z-index: 10;
+    vertical-align: baseline;
+    box-sizing: border-box;
 }
 
 .hqli-premise,
 .hqli-operation {
     margin-bottom: 0.4rem;
-    position: relative;
 }
 
-.hqli-premise[data-number]::before {
-    content: attr(data-number);
-    position: absolute;
-    left: -1.65rem;
-    width: 1.5rem;
+.hqli-premise .premise-number {
+    display: inline-block;
+    width: 1.65rem;
+    margin-left: -1.65rem;
     text-align: right;
-    display: block;
+    padding-right: 0.25rem;
     color: var(--text-color);
-    opacity: 0.75;
+    opacity: 0.6;
     font-size: 0.8em;
-    white-space: nowrap;
     font-family: monospace;
-    pointer-events: none;
-    z-index: 10;
+    vertical-align: baseline;
+    box-sizing: border-box;
 }
 
 .preamble,

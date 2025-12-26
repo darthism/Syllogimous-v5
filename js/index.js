@@ -190,8 +190,10 @@ function displayInit() {
     displayLabelLevel.textContent = (q.plen || q.premises.length) + "p";
     const easy = savedata.scrambleFactor < 12 ? ' (easy)' : '';
     const formattedPremises = q.premises.map((p, i) => {
-        const numberAttr = savedata.orderAesthetic ? ` data-number="${i + 1}."` : '';
-        return `<div class="formatted-premise"${numberAttr}>${p}</div>`;
+        if (savedata.orderAesthetic) {
+            return `<div class="formatted-premise"><span class="premise-number">${i + 1}.</span>${p}</div>`;
+        }
+        return `<div class="formatted-premise">${p}</div>`;
     });
     displayText.innerHTML = [
         `<div class="preamble">Premises${easy}</div>`,
@@ -383,8 +385,11 @@ function renderCarousel() {
         disableConfirmationButtons();
         carouselDisplayLabelType.textContent = "Premise";
         carouselDisplayLabelProgress.textContent = (carouselIndex + 1) + "/" + q.premises.length;
-        const numberAttr = savedata.orderAesthetic ? ` data-number="${carouselIndex + 1}."` : '';
-        carouselDisplayText.innerHTML = `<div class="formatted-premise"${numberAttr}>${q.premises[carouselIndex]}</div>`;
+        if (savedata.orderAesthetic) {
+            carouselDisplayText.innerHTML = `<div class="formatted-premise"><span class="premise-number">${carouselIndex + 1}.</span>${q.premises[carouselIndex]}</div>`;
+        } else {
+            carouselDisplayText.innerHTML = q.premises[carouselIndex];
+        }
     } else if (q.operations && carouselIndex < q.operations.length + q.premises.length) {
         carouselNextButton.disabled = false;
         const operationIndex = carouselIndex - q.premises.length;
@@ -857,8 +862,10 @@ function createHQLI(question, i) {
 
     const htmlPremises = q.premises
         .map((p, idx) => {
-            const numberAttr = savedata.orderAesthetic ? ` data-number="${idx + 1}."` : '';
-            return `<div class="hqli-premise"${numberAttr}>${p}</div>`;
+            if (savedata.orderAesthetic) {
+                return `<div class="hqli-premise"><span class="premise-number">${idx + 1}.</span>${p}</div>`;
+            }
+            return `<div class="hqli-premise">${p}</div>`;
         })
         .join("\n");
 

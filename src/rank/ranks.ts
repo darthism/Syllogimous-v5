@@ -68,7 +68,47 @@ const RANK_NAMES = [
   // 15. Absolute
   "Absolute I",
   "Absolute II",
-  "Absolute III"
+  "Absolute III",
+  // 16. Singularity
+  "Singularity I",
+  "Singularity II",
+  "Singularity III",
+  // 17. Infinity
+  "Infinity I",
+  "Infinity II",
+  "Infinity III",
+  // 18. Eternity
+  "Eternity I",
+  "Eternity II",
+  "Eternity III",
+  // 19. Omniscience
+  "Omniscience I",
+  "Omniscience II",
+  "Omniscience III",
+  // 20. Aether
+  "Aether I",
+  "Aether II",
+  "Aether III",
+  // 21. Dimension
+  "Dimension I",
+  "Dimension II",
+  "Dimension III",
+  // 22. Continuum
+  "Continuum I",
+  "Continuum II",
+  "Continuum III",
+  // 23. Supernal
+  "Supernal I",
+  "Supernal II",
+  "Supernal III",
+  // 24. Zenith
+  "Zenith I",
+  "Zenith II",
+  "Zenith III",
+  // 25. Origin
+  "Origin I",
+  "Origin II",
+  "Origin III"
 ] as const;
 
 const RANK_COLORS = [
@@ -101,32 +141,74 @@ const RANK_COLORS = [
   // 14. Primordial (purple)
   "#d8b4fe", "#c084fc", "#a855f7",
   // 15. Absolute (fuchsia/pink)
-  "#f0abfc", "#e879f9", "#d946ef"
+  "#f0abfc", "#e879f9", "#d946ef",
+  // 16. Singularity (red)
+  "#fca5a5", "#f87171", "#ef4444",
+  // 17. Infinity (indigo)
+  "#c7d2fe", "#818cf8", "#6366f1",
+  // 18. Eternity (violet)
+  "#ddd6fe", "#a78bfa", "#8b5cf6",
+  // 19. Omniscience (pink)
+  "#fbcfe8", "#f472b6", "#ec4899",
+  // 20. Aether (zinc)
+  "#d4d4d8", "#a1a1aa", "#71717a",
+  // 21. Dimension (slate-dark)
+  "#475569", "#1e293b", "#0f172a",
+  // 22. Continuum (indigo-dark)
+  "#4338ca", "#312e81", "#1e1b4b",
+  // 23. Supernal (amber-dark)
+  "#b45309", "#78350f", "#451a03",
+  // 24. Zenith (rose-dark)
+  "#be123c", "#881337", "#4c0519",
+  // 25. Origin (gray-darkest)
+  "#1f2937", "#111827", "#030712"
 ] as const;
 
-// Exponential rank scaling from 0 to 1,000,000 points
-// Early ranks are easier to progress through, later ranks require much more points
-const MAX_POINTS = 1_000_000;
-const NUM_RANKS = RANK_NAMES.length; // 45 ranks
-// Using exponential formula: points(i) = MAX_POINTS * (e^(k*i) - 1) / (e^(k*(n-1)) - 1)
-// where k controls the steepness of the curve
-const EXPONENTIAL_FACTOR = 0.12; // Tuned for a smooth exponential curve
+// Exponential rank scaling for first 45 ranks up to 1,000,000 points
+const BASE_RANK_COUNT = 45;
+const MAX_BASE_POINTS = 1_000_000;
+const EXPONENTIAL_FACTOR = 0.12;
 
 function getExponentialPoints(rankIndex: number): number {
   if (rankIndex === 0) return 0;
-  const maxExp = Math.exp(EXPONENTIAL_FACTOR * (NUM_RANKS - 1)) - 1;
+  // We want the 45th rank (Absolute III) to end at 1,000,000.
+  // This means getExponentialPoints(45) should be 1,000,000.
+  const maxExp = Math.exp(EXPONENTIAL_FACTOR * BASE_RANK_COUNT) - 1;
   const currentExp = Math.exp(EXPONENTIAL_FACTOR * rankIndex) - 1;
-  return Math.round(MAX_POINTS * currentExp / maxExp);
+  return Math.round(MAX_BASE_POINTS * currentExp / maxExp);
 }
+
+const EXTENDED_RANK_POINTS = [
+  1_000_000, 1_128_000, 1_272_384, // Singularity
+  1_435_249, 1_618_961, 1_826_188, // Infinity
+  2_059_940, 2_323_612, 2_621_034, // Eternity
+  2_956_527, 3_334_962, 3_761_837, // Omniscience
+  4_243_352, 4_786_501, 5_399_173, // Aether
+  6_090_268, 6_869_822, 7_749_159, // Dimension
+  8_741_051, 9_859_906, 11_121_974, // Continuum
+  12_545_587, 14_151_422, 15_962_804, // Supernal
+  18_006_043, 20_310_816, 22_910_601, // Zenith
+  25_843_158, 29_151_082, 32_882_421  // Origin
+];
 
 export const RANKS: RankDef[] = (() => {
   const out: RankDef[] = [];
-  for (let i = 0; i < NUM_RANKS; i++) {
+  for (let i = 0; i < RANK_NAMES.length; i++) {
     const name = RANK_NAMES[i];
     const color = RANK_COLORS[i];
-    const isLast = i === NUM_RANKS - 1;
-    const min = getExponentialPoints(i);
-    const max = isLast ? null : getExponentialPoints(i + 1);
+    let min: number;
+    let max: number | null;
+
+    if (i < BASE_RANK_COUNT) {
+      min = getExponentialPoints(i);
+      max = getExponentialPoints(i + 1);
+    } else {
+      const extIdx = i - BASE_RANK_COUNT;
+      min = EXTENDED_RANK_POINTS[extIdx];
+      const isLast = extIdx === EXTENDED_RANK_POINTS.length - 1;
+      max = isLast ? null : EXTENDED_RANK_POINTS[extIdx + 1];
+    }
+
     out.push({ name, min, max, color });
   }
   return out;

@@ -10158,8 +10158,10 @@ function displayInit() {
 
     if (savedata.orderAesthetic) {
         displayText.classList.add('order-aesthetic');
+        carouselDisplayText.classList.add('order-aesthetic');
     } else {
         displayText.classList.remove('order-aesthetic');
+        carouselDisplayText.classList.remove('order-aesthetic');
     }
 
     imagePromise = imagePromise.then(() => updateCustomStyles());
@@ -10308,7 +10310,8 @@ function renderCarousel() {
         disableConfirmationButtons();
         carouselDisplayLabelType.textContent = "Premise";
         carouselDisplayLabelProgress.textContent = (carouselIndex + 1) + "/" + q.premises.length;
-        carouselDisplayText.innerHTML = q.premises[carouselIndex];
+        const numberAttr = savedata.orderAesthetic ? ` data-number="${carouselIndex + 1}."` : '';
+        carouselDisplayText.innerHTML = `<div class="formatted-premise"${numberAttr}>${q.premises[carouselIndex]}</div>`;
     } else if (q.operations && carouselIndex < q.operations.length + q.premises.length) {
         carouselNextButton.disabled = false;
         const operationIndex = carouselIndex - q.premises.length;

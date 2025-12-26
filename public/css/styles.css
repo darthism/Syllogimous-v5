@@ -802,13 +802,18 @@ input[type="number"]::-moz-inner-spin-button {
 .formatted-premise[data-number]::before {
     content: attr(data-number);
     position: absolute;
-    right: 100%;
-    margin-right: 0.5rem;
-    opacity: 0.6;
+    left: -1.65rem;
+    width: 1.5rem;
+    text-align: right;
+    display: block;
+    color: var(--text-color);
+    opacity: 0.85;
     font-size: 0.9em;
     white-space: nowrap;
     font-family: monospace;
     font-weight: normal;
+    pointer-events: none;
+    z-index: 10;
 }
 
 .hqli-premise,
@@ -820,12 +825,17 @@ input[type="number"]::-moz-inner-spin-button {
 .hqli-premise[data-number]::before {
     content: attr(data-number);
     position: absolute;
-    right: 100%;
-    margin-right: 0.4rem;
-    opacity: 0.5;
+    left: -1.65rem;
+    width: 1.5rem;
+    text-align: right;
+    display: block;
+    color: var(--text-color);
+    opacity: 0.75;
     font-size: 0.8em;
     white-space: nowrap;
     font-family: monospace;
+    pointer-events: none;
+    z-index: 10;
 }
 
 .preamble,

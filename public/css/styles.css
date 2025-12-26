@@ -720,8 +720,43 @@ input[type="number"]::-moz-inner-spin-button {
 }
 
 .display_text.order-aesthetic .formatted-premise,
-.display_text.order-aesthetic .formatted-conclusion,
 .display_text.order-aesthetic .formatted-operation {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
+    white-space: nowrap !important;
+    overflow: visible;
+    position: relative;
+}
+
+.display_text.order-aesthetic .formatted-premise > .premise-number {
+    position: absolute;
+    left: -1.65rem;
+    width: 1.5rem;
+    text-align: right;
+    grid-column: unset;
+    margin: 0;
+}
+
+.display_text.order-aesthetic .formatted-premise > .subject:nth-of-type(1),
+.display_text.order-aesthetic .formatted-operation > .subject:nth-of-type(1) {
+    justify-self: end;
+    text-align: right;
+}
+
+.display_text.order-aesthetic .formatted-premise > .relation,
+.display_text.order-aesthetic .formatted-operation > .relation {
+    justify-self: center;
+    text-align: center;
+}
+
+.display_text.order-aesthetic .formatted-premise > .subject:nth-of-type(2),
+.display_text.order-aesthetic .formatted-operation > .subject:nth-of-type(2) {
+    justify-self: start;
+    text-align: left;
+}
+
+.display_text.order-aesthetic .formatted-conclusion {
     white-space: nowrap !important;
     overflow: visible;
 }
@@ -738,8 +773,34 @@ input[type="number"]::-moz-inner-spin-button {
 }
 
 .carousel_display_text.order-aesthetic .formatted-premise {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.75rem;
     white-space: nowrap !important;
     overflow: visible;
+    position: relative;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise > .premise-number {
+    position: absolute;
+    left: -1.65rem;
+    width: 1.5rem;
+    text-align: right;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise > .subject:nth-of-type(1) {
+    justify-self: end;
+    text-align: right;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise > .relation {
+    justify-self: center;
+    text-align: center;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise > .subject:nth-of-type(2) {
+    justify-self: start;
+    text-align: left;
 }
 
 .carousel_display_text.order-aesthetic .formatted-premise * {
@@ -1318,8 +1379,34 @@ input[type="checkbox"]:checked + .switch::after {
 }
 
 .hqli.order-aesthetic .hqli-premise {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
     white-space: nowrap !important;
     overflow: visible;
+    position: relative;
+}
+
+.hqli.order-aesthetic .hqli-premise > .premise-number {
+    position: absolute;
+    left: -1.65rem;
+    width: 1.5rem;
+    text-align: right;
+}
+
+.hqli.order-aesthetic .hqli-premise > .subject:nth-of-type(1) {
+    justify-self: end;
+    text-align: right;
+}
+
+.hqli.order-aesthetic .hqli-premise > .relation {
+    justify-self: center;
+    text-align: center;
+}
+
+.hqli.order-aesthetic .hqli-premise > .subject:nth-of-type(2) {
+    justify-self: start;
+    text-align: left;
 }
 
 .hqli.order-aesthetic .hqli-premise * {

@@ -190,9 +190,6 @@ function displayInit() {
     displayLabelLevel.textContent = (q.plen || q.premises.length) + "p";
     const easy = savedata.scrambleFactor < 12 ? ' (easy)' : '';
     const formattedPremises = q.premises.map((p, i) => {
-        if (savedata.orderAesthetic) {
-            return `<div class="formatted-premise"><span class="premise-number">${i + 1}.</span>${p}</div>`;
-        }
         return `<div class="formatted-premise">${p}</div>`;
     });
     displayText.innerHTML = [
@@ -229,14 +226,6 @@ function displayInit() {
         displayText.classList.add('big-question');
     } else {
         displayText.classList.remove('big-question');
-    }
-
-    if (savedata.orderAesthetic) {
-        displayText.classList.add('order-aesthetic');
-        carouselDisplayText.classList.add('order-aesthetic');
-    } else {
-        displayText.classList.remove('order-aesthetic');
-        carouselDisplayText.classList.remove('order-aesthetic');
     }
 
     imagePromise = imagePromise.then(() => updateCustomStyles());
@@ -385,11 +374,7 @@ function renderCarousel() {
         disableConfirmationButtons();
         carouselDisplayLabelType.textContent = "Premise";
         carouselDisplayLabelProgress.textContent = (carouselIndex + 1) + "/" + q.premises.length;
-        if (savedata.orderAesthetic) {
-            carouselDisplayText.innerHTML = `<div class="formatted-premise"><span class="premise-number">${carouselIndex + 1}.</span>${q.premises[carouselIndex]}</div>`;
-        } else {
-            carouselDisplayText.innerHTML = q.premises[carouselIndex];
-        }
+        carouselDisplayText.innerHTML = q.premises[carouselIndex];
     } else if (q.operations && carouselIndex < q.operations.length + q.premises.length) {
         carouselNextButton.disabled = false;
         const operationIndex = carouselIndex - q.premises.length;
@@ -849,10 +834,6 @@ function createHQLI(question, i) {
         'wrong': 'hqli--wrong'
     }[q.correctness];
     
-    if (savedata.orderAesthetic) {
-        classModifier += ' order-aesthetic';
-    }
-    
     let answerDisplay = ('' + answer).toUpperCase();
     let answerUserDisplay = {
         'missed': '(TIMED OUT)',
@@ -862,9 +843,6 @@ function createHQLI(question, i) {
 
     const htmlPremises = q.premises
         .map((p, idx) => {
-            if (savedata.orderAesthetic) {
-                return `<div class="hqli-premise"><span class="premise-number">${idx + 1}.</span>${p}</div>`;
-            }
             return `<div class="hqli-premise">${p}</div>`;
         })
         .join("\n");

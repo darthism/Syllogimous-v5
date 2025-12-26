@@ -669,10 +669,10 @@ function wowFeedback() {
 
 function storeQuestionAndSave() {
     appState.questions.push(question);
+    save();
     if (timerToggle.checked) {
         PROGRESS_STORE.storeCompletedQuestion(question)
     }
-    save();
 }
 
 function checkIfTrue() {

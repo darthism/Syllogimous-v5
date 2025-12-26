@@ -108,7 +108,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
     return;
   }
   const now = Date.now();
-  if (now - lastUpdateAt < 8000) {
+  if (now - lastUpdateAt < 3000) {
     // #region agent log
     try {
       if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {
@@ -120,7 +120,7 @@ export async function maybeUpdateLeaderboards(progressData: any): Promise<void> 
           hypothesisId: 'E',
           location: 'src/leaderboards/update.ts:maybeUpdateLeaderboards',
           message: 'early-return:throttled',
-          data: { msSinceLast: now - lastUpdateAt },
+          data: { msSinceLast: now - lastUpdateAt, throttleLimit: 3000 },
           timestamp: Date.now()
         })
       }).catch(() => {});

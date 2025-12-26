@@ -10743,6 +10743,7 @@ async function storeQuestionAndSave() {
         }).catch(() => { });
     } catch { }
     // #endregion
+    save();
     try {
         if (timerToggle.checked) {
             // Ensure the progress history is stored BEFORE we re-render progress UI.
@@ -10787,7 +10788,6 @@ async function storeQuestionAndSave() {
     } catch (e) {
         console.error("Progress store failed", e);
     } finally {
-        save();
         // #region agent log
         try {
             if (__dbgCanIngest) fetch('http://127.0.0.1:7243/ingest/d0b07b4c-34b6-4420-ae9c-63c63a325a9c', {

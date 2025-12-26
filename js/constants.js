@@ -106,6 +106,7 @@ let savedata = {
     "autoProgressionChange": 'auto',
     "autoProgressionTimeDrop": 5,
     "autoProgressionTimeBump": 5,
+    "orderAesthetic": false,
 };
 
 const defaultSavedata = structuredClone(savedata);
@@ -290,6 +291,7 @@ const keySettingMap = {
     "p-69": "autoProgressionTimeBump",
     "p-72": "useArt",
     "p-73": "useTopo",
+    "p-74": "orderAesthetic",
 };
 
 const legacySettings = [

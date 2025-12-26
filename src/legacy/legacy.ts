@@ -149,6 +149,7 @@ let savedata = {
     "autoProgressionChange": 'auto',
     "autoProgressionTimeDrop": 5,
     "autoProgressionTimeBump": 5,
+    "orderAesthetic": false,
 };
 
 const defaultSavedata = structuredClone(savedata);
@@ -337,6 +338,7 @@ const keySettingMap = {
     "p-69": "autoProgressionTimeBump",
     "p-72": "useArt",
     "p-73": "useTopo",
+    "p-74": "orderAesthetic",
 };
 
 const legacySettings = [
@@ -10114,9 +10116,13 @@ function displayInit() {
     displayLabelType.textContent = q.category.split(":")[0];
     displayLabelLevel.textContent = (q.plen || q.premises.length) + "p";
     const easy = savedata.scrambleFactor < 12 ? ' (easy)' : '';
+    const formattedPremises = q.premises.map((p, i) => {
+        const text = savedata.orderAesthetic ? `${i + 1}. ${p}` : p;
+        return `<div class="formatted-premise">${text}</div>`;
+    });
     displayText.innerHTML = [
         `<div class="preamble">Premises${easy}</div>`,
-        ...q.premises.map(p => `<div class="formatted-premise">${p}</div>`),
+        ...formattedPremises,
         ...((q.operations && q.operations.length > 0) ? ['<div class="transform-header">Transformations</div>'] : []),
         ...(q.operations ? q.operations.map(o => `<div class="formatted-operation">${o}</div>`) : []),
         '<div class="postamble">Conclusion</div>',
@@ -11104,7 +11110,10 @@ function createHQLI(question, i) {
     }[q.correctness];
 
     const htmlPremises = q.premises
-        .map(p => `<div class="hqli-premise">${p}</div>`)
+        .map((p, idx) => {
+            const text = savedata.orderAesthetic ? `${idx + 1}. ${p}` : p;
+            return `<div class="hqli-premise">${text}</div>`;
+        })
         .join("\n");
 
     const htmlOperations = q.operations ? q.operations.map(o => `<div class="hqli-operation">${o}</div>`).join("\n") : '';

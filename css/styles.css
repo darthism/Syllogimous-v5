@@ -712,22 +712,34 @@ input[type="number"]::-moz-inner-spin-button {
 
 .display_text.order-aesthetic {
     padding-left: 1.75rem;
-    overflow-x: auto;
+    overflow-x: auto !important;
 }
 
 .display_text.order-aesthetic .formatted-premise,
 .display_text.order-aesthetic .formatted-conclusion,
 .display_text.order-aesthetic .formatted-operation {
-    white-space: nowrap;
+    white-space: nowrap !important;
+    overflow: visible;
+}
+
+.display_text.order-aesthetic .formatted-premise *,
+.display_text.order-aesthetic .formatted-conclusion *,
+.display_text.order-aesthetic .formatted-operation * {
+    white-space: nowrap !important;
 }
 
 .carousel_display_text.order-aesthetic {
     padding-left: 1.75rem;
-    overflow-x: auto;
+    overflow-x: auto !important;
 }
 
 .carousel_display_text.order-aesthetic .formatted-premise {
-    white-space: nowrap;
+    white-space: nowrap !important;
+    overflow: visible;
+}
+
+.carousel_display_text.order-aesthetic .formatted-premise * {
+    white-space: nowrap !important;
 }
 
 .display_text.big-question .formatted-premise {
@@ -1298,11 +1310,16 @@ input[type="checkbox"]:checked + .switch::after {
 
 .hqli.order-aesthetic .inner {
     padding-left: 1.75rem;
-    overflow-x: auto;
+    overflow-x: auto !important;
 }
 
 .hqli.order-aesthetic .hqli-premise {
-    white-space: nowrap;
+    white-space: nowrap !important;
+    overflow: visible;
+}
+
+.hqli.order-aesthetic .hqli-premise * {
+    white-space: nowrap !important;
 }
 
 .hqli .inner > .hqli-premise:nth-child(even) {

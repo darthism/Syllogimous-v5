@@ -10156,6 +10156,12 @@ function displayInit() {
         displayText.classList.remove('big-question');
     }
 
+    if (savedata.orderAesthetic) {
+        displayText.classList.add('order-aesthetic');
+    } else {
+        displayText.classList.remove('order-aesthetic');
+    }
+
     imagePromise = imagePromise.then(() => updateCustomStyles());
 
     if (appState.darkMode) {
@@ -11101,6 +11107,10 @@ function createHQLI(question, i) {
         'right': 'hqli--right',
         'wrong': 'hqli--wrong'
     }[q.correctness];
+    
+    if (savedata.orderAesthetic) {
+        classModifier += ' order-aesthetic';
+    }
     
     let answerDisplay = ('' + answer).toUpperCase();
     let answerUserDisplay = {

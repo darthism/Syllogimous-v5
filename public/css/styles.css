@@ -714,6 +714,10 @@ input[type="number"]::-moz-inner-spin-button {
     overflow-x: hidden;
 }
 
+.display_text.order-aesthetic {
+    padding-left: 1.75rem;
+}
+
 .display_text.big-question .formatted-premise {
     margin-bottom: 0.2rem;
 }
@@ -1274,6 +1278,10 @@ input[type="checkbox"]:checked + .switch::after {
     display: grid;
     gap: 0.15rem;
     padding: 0.5rem 2rem 0.5rem 0.5rem;
+}
+
+.hqli.order-aesthetic .inner {
+    padding-left: 1.75rem;
 }
 
 .hqli .inner > .hqli-premise:nth-child(even) {

@@ -190,8 +190,8 @@ function displayInit() {
     displayLabelLevel.textContent = (q.plen || q.premises.length) + "p";
     const easy = savedata.scrambleFactor < 12 ? ' (easy)' : '';
     const formattedPremises = q.premises.map((p, i) => {
-        const text = savedata.orderAesthetic ? `${i + 1}. ${p}` : p;
-        return `<div class="formatted-premise">${text}</div>`;
+        const numberAttr = savedata.orderAesthetic ? ` data-number="${i + 1}."` : '';
+        return `<div class="formatted-premise"${numberAttr}>${p}</div>`;
     });
     displayText.innerHTML = [
         `<div class="preamble">Premises${easy}</div>`,
@@ -844,8 +844,8 @@ function createHQLI(question, i) {
 
     const htmlPremises = q.premises
         .map((p, idx) => {
-            const text = savedata.orderAesthetic ? `${idx + 1}. ${p}` : p;
-            return `<div class="hqli-premise">${text}</div>`;
+            const numberAttr = savedata.orderAesthetic ? ` data-number="${idx + 1}."` : '';
+            return `<div class="hqli-premise"${numberAttr}>${p}</div>`;
         })
         .join("\n");
 
